@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	tokenRequestRetryCount = 5
-	tokenRequestRetryTimeout = 200 * time.Millisecond
+	tokenRefreshInterval     = 30 * time.Minute
+	tokenRequestRetryTimeout = time.Second
+	tokenRequestRetryCount   = 5
 
 	requestRetryCount   int           = 3
 	requestRetryTimeout time.Duration = 200 * time.Millisecond
@@ -28,10 +29,9 @@ func NewClient(endpoint, clientID, clientSecret, username, password string) *cli
 		clientSecret: clientSecret,
 		username:     username,
 		password:     password,
-		tokenRequest: make(chan *tokenRequest),
 	}
 
-	go client.tokenDeliveryServer()
+	go client.tokenServer()
 
 	return client
 }
@@ -43,20 +43,10 @@ type client struct {
 	username     string
 	password     string
 
-	tokenRequest chan *tokenRequest
+	tokenChan <-chan transfer.Token
 }
 
-type tokenRequest struct {
-	update bool
-	token  chan transfer.Token
-	error  chan error
-}
-
-func (s *client) GetCategories() {
-
-}
-
-// Gets token by username and password
+// Gets tokenChan by username and password
 func (s *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error) {
 	result := &transfer.Token{}
 	resp, err := resty.R().
@@ -77,71 +67,123 @@ func (s *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("request is not ok, status is: %d", resp.StatusCode())
+		return nil, fmt.Errorf("getTokenByPassword: request is not OK, status is: %d", resp.StatusCode())
 	}
 
 	return result, nil
 }
 
-//func (s *client) tokenUpdateServer() {
-//	// first we need to obtain token by username and password
-//	var token *transfer.Token
-//	for ; ; token == nil {
-//
-//	}
-//
-//}
+// Gets tokenChan by refresh tokenChan
+func (s *client) getTokenByRefreshToken(ctx context.Context, refreshToken string) (*transfer.Token, error) {
+	result := &transfer.Token{}
+	resp, err := resty.R().
+		SetContext(ctx).
+		SetHeader("Content-Type", "application/x-www-form-urlencoded").
+		SetFormData(map[string]string{
+			"client_id":     s.clientID,
+			"client_secret": s.clientSecret,
+			"grant_type":    "refresh_token",
+			"refresh_token": refreshToken,
+		}).
+		SetResult(result).
+		Post(s.getUrl("/oauth/v2/tokens"))
 
-// Token Delivery server. Gets tokens from Sylius OAuth server and responses for token requests.
-func (s *client) tokenDeliveryServer() {
-	var token *transfer.Token
-
-	for request := range s.tokenRequest {
-		var err error
-
-		if request.update {
-			token = nil
-		}
-
-		if token == nil {
-			for i := requestRetryCount; token == nil && i > 0; i-- {
-				ctx, _ := context.WithTimeout(context.Background(), requestTimeout)
-				token, err = s.getTokenByPassword(ctx)
-				if err != nil && i > 0 {
-					time.Sleep(requestRetryTimeout)
-				}
-			}
-		}
-
-		if err != nil {
-			request.error <- err
-		} else {
-			request.token <- *token
-		}
+	if err != nil {
+		return nil, err
 	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("getTokenByRefreshToken: request is not OK, status is: %d", resp.StatusCode())
+	}
+
+	return result, nil
 }
 
-// Gets a token structure.
-func (s *client) getToken(updateExisting bool) (*transfer.Token, error) {
-	request := &tokenRequest{
-		update: updateExisting,
-		token:  make(chan transfer.Token),
-		error:  make(chan error),
+// Token delivery server. Gets tokens from Sylius OAuth server and writes them to a channel.
+func (s *client) tokenServer() {
+	tokenChan := make(chan transfer.Token)
+	defer close(tokenChan)
+
+	s.tokenChan = tokenChan
+
+	var token *transfer.Token
+	var refreshToken <-chan time.Time
+
+	obtainToken := make(chan bool, 1)
+	obtainToken <- true
+
+	for keepRunning := true ; keepRunning ; {
+		var tokenRequestChan chan transfer.Token
+		if token != nil {
+			tokenRequestChan = tokenChan
+		}
+
+		select {
+		case tokenRequestChan <- *token:
+			fmt.Println("wrote token to token channel")
+
+		case <-obtainToken:
+			newToken, err := s.obtainTokenByPasswordAndUsername()
+			if err != nil {
+				keepRunning = false
+			} else {
+				token = newToken
+				refreshToken = time.After(tokenRefreshInterval)
+			}
+
+		case <-refreshToken:
+			newToken, err := s.getTokenByRefreshToken(s.getContextWithTimeout(), token.RefreshToken)
+			if err != nil {
+				obtainToken <- true
+			} else {
+				token = newToken
+				refreshToken = time.After(tokenRefreshInterval)
+			}
+
+		}
 	}
 
-	s.tokenRequest <- request
+	close(tokenChan)
+}
 
+// Tries to get tokenChan by username and password.
+// Retries for a const amount of times if api request fails.
+func (s *client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
+	for i := 0; i < tokenRequestRetryCount; i++ {
+		token, err := s.getTokenByPassword(s.getContextWithTimeout())
+		if err != nil {
+			time.Sleep(tokenRequestRetryTimeout)
+		} else {
+			return token, nil
+		}
+	}
+
+	return nil, fmt.Errorf("can't obtain tokenChan by password and username after %d retries", tokenRequestRetryTimeout)
+}
+
+// Gets a tokenChan structure.
+func (s *client) getToken(updateExisting bool) (*transfer.Token, error) {
 	select {
-	case token := <-request.token:
-		return &token, nil
-	case err := <-request.error:
-		return nil, fmt.Errorf("get token error: %s", err.Error())
+	case token, ok := <-s.tokenChan:
+		if !ok {
+			return nil, fmt.Errorf("can't get tokenChan: ")
+		} else {
+			return &token, nil
+		}
+
 	case <-time.After(4 * time.Second):
-		return nil, fmt.Errorf("get token timeout")
+		return nil, fmt.Errorf("get tokenChan timeout")
 	}
 }
 
 // Returns full url using endpoint and resource paths.
 func (s *client) getUrl(path string) string {
 	return strings.TrimSuffix(s.endpoint, "/") + "/" + strings.TrimPrefix(path, "/")
+}
+
+// Gets context with timeout
+func (s *client) getContextWithTimeout() context.Context {
+	ctx, _ := context.WithTimeout(context.Background(), requestTimeout)
+
+	return ctx
 }
