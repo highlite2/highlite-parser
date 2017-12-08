@@ -19,10 +19,10 @@ func getLog() log.ILogger {
 func main() {
 	logger := getLog()
 	_ = sylius.NewClient(logger, "http://localhost:1221/app_dev.php/api", sylius.Auth{
-		ClientID:     "3u721kcbho4kcosgws08s84gw48wc0g40ggc088s8ccs8s40w0",
-		ClientSecret: "tplxj5h4e800gc8480ckss0okc8kwccck4ks4o40ckoc0c4w",
-		Username:     "test@test.com",
-		Password:     "123123",
+		ClientID:     "demo_client",
+		ClientSecret: "secret_demo_client",
+		Username:     "api@example.com",
+		Password:     "sylius-api",
 	})
 
 	time.Sleep(time.Second * 30)
