@@ -2,3 +2,9 @@ package: highlite-parser
 import:
 - package: github.com/go-resty/resty
   version: ^1.0.0
+- package: github.com/apex/log
+  version: ^1.0.0
+- package: github.com/pkg/errors
+  version: ^0.8.0
+- package: github.com/go-logfmt/logfmt
+  version: ^0.3.0
