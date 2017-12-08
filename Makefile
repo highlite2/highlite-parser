@@ -1,8 +1,30 @@
+GOPACKAGES ?= $(shell go list ./... | grep -v /vendor/)
+GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+
+.PHONY: install-tools
+install-tools:
+	${INFO} "Installing tools for development..."
+	@ go get github.com/elgris/hint
+	@ go get golang.org/x/tools/cmd/goimports
 
 .PHONY: deps
 deps:
-	${INFO} "Installing dependencies"
+	${INFO} "Installing dependencies..."
 	@ glide install
+
+.PHONY: check
+check:
+	${INFO} "Running goimports..."
+	@ goimports -w -local highlite-parser $(GOFILES)
+
+	${INFO} "Running go vet..."
+	@ go vet ${GOPACKAGES}
+
+	${INFO} "Running gohint..."
+	@ gohint -config="./gohint-config.json" -reporter=plain
+
+	${INFO} "DONE"
+
 
 # ======================================================================================================================
 # COMMON FUNCTIONS

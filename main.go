@@ -1,15 +1,16 @@
 package main
 
 import (
-	"highlite-parser/client/sylius"
-	"highlite-parser/log"
 	"time"
 
 	apexLog "github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
+
+	"highlite-parser/internal/client/sylius"
+	"highlite-parser/internal/log"
 )
 
-func getLog() log.Logger {
+func getLog() log.ILogger {
 	apexLog.SetHandler(cli.Default)
 	apexLog.SetLevel(apexLog.DebugLevel)
 	return apexLog.Log

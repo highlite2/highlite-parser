@@ -1,7 +1,7 @@
 package log
 
-// Logger is an interface for log
-type Logger interface {
+// ILogger is an interface for log
+type ILogger interface {
 	Debug(msg string)
 	Info(msg string)
 	Warn(msg string)

@@ -1,0 +1,19 @@
+{
+  "ignore-paths": [
+    "^vendor\/"
+  ],
+  "package": true,
+  "imports": true,
+  "names": true,
+  "exported": true,
+  "var-decls": true,
+  "elses": true,
+  "make-slice": true,
+  "error-return": true,
+  "ignored-return": true,
+  "package-underscore": true,
+  "named-return": false,
+  "package-prefix-names": true,
+  "use-this": false,
+  "check-generated": true
+}
