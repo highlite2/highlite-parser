@@ -9,11 +9,11 @@ import (
 	"context"
 	"encoding/json"
 
+	"highlite-parser/internal"
 	"highlite-parser/internal/client/sylius"
-	"highlite-parser/internal/log"
 )
 
-func getLog() log.ILogger {
+func getLog() internal.ILogger {
 	apexLog.SetHandler(cli.Default)
 	apexLog.SetLevel(apexLog.DebugLevel)
 	return apexLog.Log

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"highlite-parser/internal"
 	"highlite-parser/internal/client/sylius/transfer"
-	"highlite-parser/internal/log"
 
 	"github.com/go-resty/resty"
 )
@@ -22,7 +22,7 @@ const (
 )
 
 // NewClient is a Sylius client constructor.
-func NewClient(log log.ILogger, endpoint string, auth Auth) *client {
+func NewClient(log internal.ILogger, endpoint string, auth Auth) *client {
 	client := &client{
 		endpoint: endpoint,
 		auth:     auth,
@@ -45,7 +45,7 @@ type Auth struct {
 type client struct {
 	endpoint  string
 	auth      Auth
-	log       log.ILogger
+	log       internal.ILogger
 	tokenChan <-chan *transfer.Token
 }
 

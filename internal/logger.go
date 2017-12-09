@@ -1,4 +1,4 @@
-package log
+package internal
 
 // ILogger is an interface for log
 type ILogger interface {
