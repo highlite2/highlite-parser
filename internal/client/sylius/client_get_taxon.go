@@ -10,6 +10,7 @@ import (
 	"github.com/go-resty/resty"
 )
 
+// GetTaxon get a category by its code.
 func (c *client) GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error) {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
