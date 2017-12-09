@@ -53,7 +53,9 @@ type client struct {
 func (c *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
+
 	url := c.getURL("/oauth/v2/token")
+
 	result := &transfer.Token{}
 	resp, err := resty.R().
 		SetContext(ctx).
@@ -69,11 +71,11 @@ func (c *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error
 		Post(url)
 
 	if err != nil {
-		return nil, fmt.Errorf("request to %c failed: %c", url, err.Error())
+		return nil, fmt.Errorf("request to %s failed: %s", url, err.Error())
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("request to %c ended with status %c", url, resp.Status())
+		return nil, fmt.Errorf("request to %s ended with status %s", url, resp.Status())
 	}
 
 	return result, nil
@@ -83,7 +85,9 @@ func (c *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error
 func (c *client) getTokenByRefreshToken(ctx context.Context, refreshToken string) (*transfer.Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
+
 	url := c.getURL("/oauth/v2/token")
+
 	result := &transfer.Token{}
 	resp, err := resty.R().
 		SetContext(ctx).
@@ -98,11 +102,11 @@ func (c *client) getTokenByRefreshToken(ctx context.Context, refreshToken string
 		Post(url)
 
 	if err != nil {
-		return nil, fmt.Errorf("request to %c failed: %c", url, err.Error())
+		return nil, fmt.Errorf("request to %s failed: %s", url, err.Error())
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("request to %c ended with status %d", url, resp.StatusCode())
+		return nil, fmt.Errorf("request to %s ended with status %s", url, resp.Status())
 	}
 
 	return result, nil
@@ -137,7 +141,7 @@ func (c *client) tokenServer() {
 			c.log.Debug("Trying to obtain token by password")
 			newToken, err := c.obtainTokenByPasswordAndUsername()
 			if err != nil {
-				c.log.Errorf("Can't get token: %c", err.Error())
+				c.log.Errorf("Can't get token: %s", err.Error())
 				keepRunning = false
 			} else {
 				c.log.Debug("Successfully received token")
@@ -148,7 +152,7 @@ func (c *client) tokenServer() {
 		case <-refreshToken:
 			newToken, err := c.getTokenByRefreshToken(context.Background(), token.RefreshToken)
 			if err != nil {
-				c.log.Errorf("Can't refresh token using refresh token: %c", err.Error())
+				c.log.Errorf("Can't refresh token using refresh token: %s", err.Error())
 				obtainToken <- true
 				token = nil
 			} else {
@@ -169,7 +173,7 @@ func (c *client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
 	for i := 0; i < tokenRequestRetryCount; i++ {
 		token, err := c.getTokenByPassword(context.Background())
 		if err != nil {
-			c.log.Warnf("Failed to obtain password for the %d time: %c", i+1, err.Error())
+			c.log.Warnf("Failed to obtain password for the %d time: %s", i+1, err.Error())
 			time.Sleep(tokenRequestRetryTimeout)
 		} else {
 			return token, nil
@@ -179,22 +183,21 @@ func (c *client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
 	return nil, fmt.Errorf("can't obtain token by password and username after %d retries", tokenRequestRetryCount)
 }
 
-// Gets a tokenChan structure.
-func (c *client) getToken(updateExisting bool) (string, error) {
-	select {
-	case token, ok := <-c.tokenChan:
-		if !ok {
-			return "", fmt.Errorf("can't get token: token chan is closed")
-		}
-
-		return token.AccessToken, nil
-
-	case <-time.After(time.Second):
-		return "", fmt.Errorf("can't get token: timeout")
+// Gets a token.
+func (c *client) getToken() (string, error) {
+	token, ok := <-c.tokenChan
+	if !ok {
+		return "", fmt.Errorf("can't get token: token chan was closed")
 	}
+
+	return token.AccessToken, nil
 }
 
-// Returns full url using Endpoint and resource paths.
-func (c *client) getURL(path string) string {
+// Returns full url using endpoint and resource paths.
+func (c *client) getURL(path string, args ...interface{}) string {
+	if len(args) > 0 {
+		path = fmt.Sprintf(path, args...)
+	}
+
 	return strings.TrimSuffix(c.endpoint, "/") + "/" + strings.TrimPrefix(path, "/")
 }
