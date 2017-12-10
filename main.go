@@ -1,13 +1,12 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"time"
 
 	apexLog "github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-
-	"context"
-	"encoding/json"
 
 	"highlite-parser/internal"
 	"highlite-parser/internal/client/sylius"

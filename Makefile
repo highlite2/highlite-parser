@@ -12,6 +12,11 @@ deps:
 	${INFO} "Installing dependencies..."
 	@ glide install
 
+.PHONY: test
+test:
+	${INFO} "Running tests..."
+	@ go test -v ${GOPACKAGES}
+
 .PHONY: check
 check:
 	${INFO} "Running goimports..."

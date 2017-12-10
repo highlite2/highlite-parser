@@ -8,3 +8,5 @@ import:
   version: ^0.8.0
 - package: github.com/go-logfmt/logfmt
   version: ^0.3.0
+- package: github.com/stretchr/testify
+  version: ^1.1.4
