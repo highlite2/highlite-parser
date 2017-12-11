@@ -4,7 +4,7 @@ GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 .PHONY: install-tools
 install-tools:
 	${INFO} "Installing tools for development..."
-	@ go get github.com/elgris/hint
+	@ go get github.com/elgris/hint/gohint
 	@ go get golang.org/x/tools/cmd/goimports
 
 .PHONY: deps
