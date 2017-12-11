@@ -20,6 +20,10 @@ const (
 	requestTimeout time.Duration = time.Second
 )
 
+type IClient interface {
+	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
+}
+
 // NewClient is a Sylius client constructor.
 func NewClient(log internal.ILogger, endpoint string, auth Auth) *client {
 	c := &client{
