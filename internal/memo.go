@@ -1,4 +1,4 @@
-package cache
+package internal
 
 // IMemo is a memorization of a callback by key.
 type IMemo interface {
@@ -33,7 +33,7 @@ type memo struct {
 // NewMemo provides a concurrency-safe non-blocking memoization of a function.
 // Requests for different keys proceed in parallel.
 // Concurrent requests for the same key block until the first completes.
-func NewMemo() *memo {
+func NewMemo() IMemo {
 	m := &memo{
 		requests: make(chan memoRequest),
 	}

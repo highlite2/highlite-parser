@@ -9,7 +9,7 @@ import (
 	"github.com/apex/log/handlers/cli"
 
 	"highlite-parser/internal"
-	"highlite-parser/internal/client/sylius"
+	"highlite-parser/internal/sylius"
 )
 
 func getLog() internal.ILogger {
@@ -28,7 +28,7 @@ func main() {
 	})
 
 	ctx := context.Background()
-	taxon, err := cl.GetTaxon(ctx, "t_shirts")
+	taxon, err := cl.GetTaxon(ctx, "mens_t_shirts")
 	if err != nil {
 		l.Error(err.Error())
 	} else {

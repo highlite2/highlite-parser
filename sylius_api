@@ -1,0 +1,17 @@
+curl http://localhost:1221/app_dev.php/api/oauth/v2/token \
+    -d "client_id"=demo_client \
+    -d "client_secret"=secret_demo_client \
+    -d "grant_type"=password \
+    -d "username"=api@example.com \
+    -d "password"=sylius-api
+
+
+curl http://localhost:1221/app_dev.php/api/v1/taxons/mens_t_shirts \
+    -H "Authorization: Bearer ZDNkMTNhOTAzNDBlYTUxMGU1ZDUzODlkZTMyMzYxZWNiNjI5ZGQ5NDU5Y2Y0Y2FjNDNkNGQzMmFhYThiZTAxNA" \
+    -H "Accept: application/json"
+
+curl http://localhost:1221/app_dev.php/api/v1/users/ \
+    -H "Authorization: Bearer OTkzNjE4M2I2YWYxNWM3MDA4MTdmNmUyYjIwZTcyN2Y3ZjNhNjRlMjc2ZWI3OTA0MjE5NmI2ZjBiMzc5MzMyZQ"
+
+curl http://localhost:1221/app_dev.php/api/v1/users/3 \
+    -H "Authorization: Bearer M2EyM2JjZjlkYzdjZTc0NGNiNGYxNDQ2Y2NiMmMyMjk0MTg1MjQzMWExMjk3NjhmOTE5YmI5ZGY1NmVhMmE5NQ"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"highlite-parser/internal/client/sylius/transfer"
+	"highlite-parser/internal/sylius/transfer"
 
 	"github.com/go-resty/resty"
 )

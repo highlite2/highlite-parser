@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"highlite-parser/internal"
-	"highlite-parser/internal/client/sylius/transfer"
+	"highlite-parser/internal/sylius/transfer"
 
 	"github.com/go-resty/resty"
 )
@@ -20,12 +20,13 @@ const (
 	requestTimeout time.Duration = time.Second
 )
 
+// IClient is a Sylius client interface
 type IClient interface {
 	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
 }
 
 // NewClient is a Sylius client constructor.
-func NewClient(log internal.ILogger, endpoint string, auth Auth) *client {
+func NewClient(log internal.ILogger, endpoint string, auth Auth) IClient {
 	c := &client{
 		endpoint:  endpoint,
 		auth:      auth,
