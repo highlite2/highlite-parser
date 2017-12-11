@@ -14,24 +14,26 @@ import (
 )
 
 const (
-	tokenRefreshInterval     = 30 * time.Minute
-	tokenRequestRetryTimeout = time.Second
-	tokenRequestRetryCount   = 5
+	tokenRefreshInterval   = 30 * time.Minute
+	tokenRequestRetryCount = 10
 
 	requestTimeout time.Duration = time.Second
 )
 
 // NewClient is a Sylius client constructor.
 func NewClient(log internal.ILogger, endpoint string, auth Auth) *client {
-	client := &client{
-		endpoint: endpoint,
-		auth:     auth,
-		log:      log,
+	c := &client{
+		endpoint:  endpoint,
+		auth:      auth,
+		log:       log,
+		tokenChan: make(chan *transfer.Token),
 	}
 
-	go client.tokenServer()
+	go c.tokenServer()
 
-	return client
+	c.getToken()
+
+	return c
 }
 
 // Auth contains credentials to obtain Sylius API token.
@@ -46,10 +48,10 @@ type client struct {
 	endpoint  string
 	auth      Auth
 	log       internal.ILogger
-	tokenChan <-chan *transfer.Token
+	tokenChan chan *transfer.Token
 }
 
-// Gets tokenChan by Username and Password
+// Gets tokenChan by Username and Password.
 func (c *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
@@ -81,7 +83,7 @@ func (c *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error
 	return result, nil
 }
 
-// Gets tokenChan by refresh tokenChan
+// Gets tokenChan by refresh tokenChan.
 func (c *client) getTokenByRefreshToken(ctx context.Context, refreshToken string) (*transfer.Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
@@ -115,23 +117,17 @@ func (c *client) getTokenByRefreshToken(ctx context.Context, refreshToken string
 // Token delivery server. Gets tokens from Sylius OAuth server and writes them to a channel.
 // Makes a token background update.
 func (c *client) tokenServer() {
-	tokenChan := make(chan *transfer.Token)
-	defer close(tokenChan)
-
-	c.tokenChan = tokenChan
-
 	var token *transfer.Token
-	var refreshToken <-chan time.Time
 
+	refreshToken := make(<-chan time.Time)
 	obtainToken := make(chan bool, 1)
 	obtainToken <- true
 
 	c.log.Debug("Starting token delivery server")
-
 	for keepRunning := true; keepRunning; {
 		var tokenRequestChan chan *transfer.Token
 		if token != nil {
-			tokenRequestChan = tokenChan
+			tokenRequestChan = c.tokenChan
 		}
 
 		select {
@@ -174,7 +170,7 @@ func (c *client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
 		token, err := c.getTokenByPassword(context.Background())
 		if err != nil {
 			c.log.Warnf("Failed to obtain password for the %d time: %s", i+1, err.Error())
-			time.Sleep(tokenRequestRetryTimeout)
+			time.Sleep(time.Second)
 		} else {
 			return token, nil
 		}
