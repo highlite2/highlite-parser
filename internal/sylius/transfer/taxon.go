@@ -1,22 +1,46 @@
 package transfer
 
-// Taxon is a representation of a category in Sylius
+import (
+	"encoding/json"
+)
+
+// Taxon is a representation of a category in Sylius.
 type Taxon struct {
-	ID           int         `json:"id"`
-	Code         string      `json:"code"`
-	Name         string      `json:"name"`
-	Parent       *Taxon      `json:"parent"`
-	Root         *Taxon      `json:"root"`
-	Translations interface{} `json:"translations"`
+	ID           int                    `json:"id"`
+	Code         string                 `json:"code"`
+	Name         string                 `json:"name"`
+	Parent       *Taxon                 `json:"parent"`
+	Root         *Taxon                 `json:"root"`
+	Translations map[string]Translation `json:"translations,omitempty"`
 }
 
-// GetTranslations returns translations map
-func (t *Taxon) GetTranslations() map[string]Translation {
-	var empty map[string]Translation
+// TaxonRaw is a helper to parse Sylius taxon.
+// Sylius api returns different representation for Translations:
+// if there are no translations, Sylius returns an empty array,
+// if not empty - an object.
+type TaxonRaw struct {
+	Taxon
+	Parent       *TaxonRaw       `json:"parent"`
+	Root         *TaxonRaw       `json:"root"`
+	Translations json.RawMessage `json:"translations"`
+}
 
-	if tr, ok := t.Translations.(map[string]Translation); ok {
-		return tr
+// ConvertRawTaxon converts TaxonRaw to Taxon type.
+func ConvertRawTaxon(raw *TaxonRaw) *Taxon {
+	taxon := raw.Taxon
+
+	if raw.Root != nil {
+		taxon.Root = ConvertRawTaxon(raw.Root)
 	}
 
-	return empty
+	if raw.Parent != nil {
+		taxon.Parent = ConvertRawTaxon(raw.Parent)
+	}
+
+	var t map[string]Translation
+	if err := json.Unmarshal(raw.Translations, &t); err == nil {
+		taxon.Translations = t
+	}
+
+	return &taxon
 }

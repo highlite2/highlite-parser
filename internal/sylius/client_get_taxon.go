@@ -23,7 +23,7 @@ func (c *client) GetTaxon(ctx context.Context, code string) (*transfer.Taxon, er
 		return nil, err
 	}
 
-	result := &transfer.Taxon{}
+	result := &transfer.TaxonRaw{}
 	resp, err := resty.R().SetContext(ctx).SetHeader("Authorization", "Bearer "+token).SetResult(result).Get(url)
 
 	if err != nil {
@@ -34,5 +34,5 @@ func (c *client) GetTaxon(ctx context.Context, code string) (*transfer.Taxon, er
 		return nil, fmt.Errorf("request to %s ended with status %s", url, resp.Status())
 	}
 
-	return result, nil
+	return transfer.ConvertRawTaxon(result), nil
 }
