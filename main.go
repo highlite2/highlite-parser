@@ -28,7 +28,7 @@ func main() {
 	})
 
 	ctx := context.Background()
-	taxon, err := cl.GetTaxon(ctx, "mens_t_shirts")
+	taxon, err := cl.GetTaxon(ctx, "category")
 	if err != nil {
 		l.Error(err.Error())
 	} else {

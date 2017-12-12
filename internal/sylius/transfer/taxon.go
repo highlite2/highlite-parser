@@ -6,11 +6,11 @@ import (
 
 // Taxon is a representation of a category in Sylius.
 type Taxon struct {
-	ID           int                    `json:"id"`
-	Code         string                 `json:"code"`
-	Name         string                 `json:"name"`
-	Parent       *Taxon                 `json:"parent"`
-	Root         *Taxon                 `json:"root"`
+	ID           int                    `json:"id,omitempty"`
+	Code         string                 `json:"code,omitempty"`
+	Name         string                 `json:"name,omitempty"`
+	Parent       *Taxon                 `json:"parent,omitempty"`
+	Root         *Taxon                 `json:"root,omitempty"`
 	Translations map[string]Translation `json:"translations,omitempty"`
 }
 

@@ -15,3 +15,40 @@ curl http://localhost:1221/app_dev.php/api/v1/users/ \
 
 curl http://localhost:1221/app_dev.php/api/v1/users/3 \
     -H "Authorization: Bearer M2EyM2JjZjlkYzdjZTc0NGNiNGYxNDQ2Y2NiMmMyMjk0MTg1MjQzMWExMjk3NjhmOTE5YmI5ZGY1NmVhMmE5NQ"
+
+
+curl http://localhost:1221/app_dev.php/api/v1/taxons/ \
+    -H "Authorization: Bearer NDk0M2EzYzRkMWVmMzNjY2ZkYzM2OTA1ODc2MGEzYzZjOTFkYzM1NDYxYzdjNTExMjc4ZTJmOWE0Mjg4N2E3MQ" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    --data '
+        {
+            "code": "toys",
+            "translations": {
+                  "en_US": {
+                    "description": "Test category.",
+                    "name": "Toys",
+                    "slug": "toys"
+                  }
+                }
+        }
+    ' | python -mjson.tool
+
+
+curl http://localhost:1221/app_dev.php/api/v1/taxons/ \
+    -H "Authorization: Bearer NDk0M2EzYzRkMWVmMzNjY2ZkYzM2OTA1ODc2MGEzYzZjOTFkYzM1NDYxYzdjNTExMjc4ZTJmOWE0Mjg4N2E3MQ" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    --data '
+        {
+            "code": "toys2",
+            "parent": "toys",
+            "translations": {
+                  "en_US": {
+                    "description": "Test category 2.",
+                    "name": "Toys2",
+                    "slug": "toys2"
+                  }
+                }
+        }
+    ' | python -mjson.tool
