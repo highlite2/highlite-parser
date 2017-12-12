@@ -3,12 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	apexLog "github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 
+	"os"
+
+	"fmt"
+
 	"highlite-parser/internal"
+	"highlite-parser/internal/highlite"
 	"highlite-parser/internal/sylius"
 )
 
@@ -18,15 +22,7 @@ func getLog() internal.ILogger {
 	return apexLog.Log
 }
 
-func main() {
-	l := getLog()
-	cl := sylius.NewClient(l, "http://localhost:1221/app_dev.php/api", sylius.Auth{
-		ClientID:     "demo_client",
-		ClientSecret: "secret_demo_client",
-		Username:     "api@example.com",
-		Password:     "sylius-api",
-	})
-
+func testGetTaxon(cl sylius.IClient, l internal.ILogger) {
 	ctx := context.Background()
 	taxon, err := cl.GetTaxon(ctx, "category")
 	if err != nil {
@@ -39,6 +35,44 @@ func main() {
 			l.Info(string(j))
 		}
 	}
+}
 
-	time.Sleep(time.Second * 5)
+func main() {
+	log := getLog()
+
+	syliusClient := sylius.NewClient(log, "http://localhost:1221/app_dev.php/api", sylius.Auth{
+		ClientID:     "demo_client",
+		ClientSecret: "secret_demo_client",
+		Username:     "api@example.com",
+		Password:     "sylius-api",
+	})
+
+	testGetTaxon(syliusClient, log)
+
+	fmt.Println()
+	fmt.Println()
+
+	file, err := os.Open("./_tmp/products_v1_0.csv")
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	i := 0
+
+	parser := highlite.NewCSVReaderWithWindows1257Decoder(file, log)
+	for n := parser.Next(); n == true; n = parser.Next() {
+		break
+		//row := parser.Values()
+		//fmt.Printf("%#v", row)
+		//fmt.Println()
+		//fmt.Println()
+
+		i++
+	}
+
+	for _, val := range parser.Titles() {
+		fmt.Println(val)
+	}
 }
