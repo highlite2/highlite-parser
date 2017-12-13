@@ -8,7 +8,7 @@ import (
 var categoryCodeRegExp *regexp.Regexp
 
 func init() {
-	reg, err := regexp.Compile("[^a-z0-9 _-]+")
+	reg, err := regexp.Compile("[^a-z0-9]+")
 	if err != nil {
 		panic(err)
 	}
@@ -56,13 +56,10 @@ func (c *Category) GetSlug() string {
 
 // SetSlugAndCode sets slug and code from given string.
 func (c *Category) SetSlugAndCode(str string) {
-	str = strings.ToLower(c.Name)
-	str = categoryCodeRegExp.ReplaceAllString(str, "")
-	str = strings.Replace(str, "-", " ", -1)
-	str = strings.Replace(str, "_", " ", -1)
-	str = strings.Replace(str, "  ", "", -1)
-	str = strings.Replace(str, "  ", "", -1)
+	str = strings.ToLower(str)
+	str = categoryCodeRegExp.ReplaceAllString(str, " ")
+	fields := strings.Fields(str)
 
-	c.Slug = strings.Replace(str, " ", "-", -1)
-	c.Code = strings.Replace(str, " ", "_", -1)
+	c.Slug = strings.Join(fields, "-")
+	c.Code = strings.Join(fields, "_")
 }
