@@ -17,19 +17,15 @@ var (
 	errWrongColumnCount = errors.New("column count is wrong")
 )
 
+// GetWindows1257Decoder decorates reader with Windows1257 decoder transformation.
+func GetWindows1257Decoder(reader io.Reader) io.Reader {
+	return transform.NewReader(reader, charmap.Windows1257.NewDecoder())
+}
+
 // NewCSVReader creates a new CSVReader.
 func NewCSVReader(reader io.Reader, log internal.ILogger) *CSVReader {
 	return &CSVReader{
 		scanner: bufio.NewScanner(reader),
-		log:     log,
-	}
-}
-
-// NewCSVReaderWithWindows1257Decoder creates a new CSVReader and decorates
-// reader with Windows1257 decoder
-func NewCSVReaderWithWindows1257Decoder(reader io.Reader, log internal.ILogger) *CSVReader {
-	return &CSVReader{
-		scanner: bufio.NewScanner(transform.NewReader(reader, charmap.Windows1257.NewDecoder())),
 		log:     log,
 	}
 }
@@ -45,62 +41,57 @@ type CSVReader struct {
 	err error
 }
 
-// Err returns an error that might has occurred
+// Err returns an error that might has occurred.
 func (c *CSVReader) Err() error {
 	return c.err
 }
 
-// Values returns last row
+// Values returns last read line values.
 func (c *CSVReader) Values() []string {
 	return c.values
 }
 
-// Titles returns titles
+// Titles returns titles.
 func (c *CSVReader) Titles() []string {
 	return c.titles
 }
 
-// Next triggers next line reading. It returns true, is a line was successfully read.
-// False is returned when an error occurred on end of file was reached.
-func (c *CSVReader) Next() bool {
-	if err := c.extractTitles(); err != nil {
-		return c.handleErr(err)
+// ReadTitles reads values from current line and saves them as titles.
+// It returns true is the line was successfully read. False is returned
+// when an error occurred on file end was reached.
+func (c *CSVReader) ReadTitles() bool {
+	if !c.scanner.Scan() {
+		return c.handleErr(c.scanner.Err())
 	}
 
+	if c.titles = parseCSVLine(c.scanner.Text()); len(c.titles) == 0 {
+		return c.handleErr(errNoTitles)
+	}
+
+	return true
+}
+
+// Next triggers next line reading. It returns true, if the line was successfully read.
+// False is returned when an error occurred on file end was reached.
+func (c *CSVReader) Next() bool {
 	if !c.scanner.Scan() {
 		return c.handleErr(c.scanner.Err())
 	}
 
 	c.values = parseCSVLine(c.scanner.Text())
-	if len(c.titles) != len(c.values) {
+
+	if len(c.values) == 0 || (len(c.titles) > 0 && len(c.titles) != len(c.values)) {
 		return c.handleErr(errWrongColumnCount)
 	}
 
 	return true
 }
 
-// Saved an error
+// Saves the error and returns false.
 func (c *CSVReader) handleErr(err error) bool {
 	c.err = err
 
 	return false
-}
-
-// Extracts titles
-func (c *CSVReader) extractTitles() error {
-	if len(c.titles) > 0 {
-		return nil
-	}
-
-	if !c.scanner.Scan() {
-		return c.scanner.Err()
-	}
-
-	if c.titles = parseCSVLine(c.scanner.Text()); len(c.titles) == 0 {
-		return errNoTitles
-	}
-
-	return nil
 }
 
 // Splits string into slice and removes quotes

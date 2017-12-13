@@ -59,19 +59,8 @@ func main() {
 
 	defer file.Close()
 
-	i := 0
-
-	parser := highlite.NewCSVReaderWithWindows1257Decoder(file, log)
-	for n := parser.Next(); n == true; n = parser.Next() {
-		break
-		//row := parser.Values()
-		//fmt.Printf("%#v", row)
-		//fmt.Println()
-		//fmt.Println()
-
-		i++
-	}
-
+	parser := highlite.NewCSVReader(highlite.GetWindows1257Decoder(file), log)
+	parser.ReadTitles()
 	for _, val := range parser.Titles() {
 		fmt.Println(val)
 	}
