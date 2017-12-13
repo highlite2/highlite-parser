@@ -1,33 +1,68 @@
 package highlite
 
-//"highlite-parser/internal/sylius/transfer"
-//"strings"
-//"regexp"
+import (
+	"regexp"
+	"strings"
+)
 
-// Category is a representation of a highlite category
-type Category struct {
-	NameEn string
-	NameRu string
+var categoryCodeRegExp *regexp.Regexp
+
+func init() {
+	reg, err := regexp.Compile("[^a-z0-9 _-]+")
+	if err != nil {
+		panic(err)
+	}
+
+	categoryCodeRegExp = reg
 }
 
-//func GetTaxonChain(cats ...Category) {
-//	slug := ""
-//	code := ""
-//	taxons := make([]transfer.Taxon, 0, len(cats))
-//	for c := range cats {
-//
-//	}
-//}
-//
-//func getCode(c Category) string {
-//	reg, err := regexp.Compile("[^a-z0-9 _]+")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	processedString := reg.ReplaceAllString(example, "")
-//
-//	code := strings.ToLower(c.NameEn)
-//
-//
-//	return ""
-//}
+// NewCategory creates new category and sets slug and code from category name.
+func NewCategory(name string, parent *Category) *Category {
+	cat := &Category{
+		Name:   name,
+		Parent: parent,
+	}
+
+	cat.SetSlugAndCode(name)
+
+	return cat
+}
+
+// Category is a highlite import category.
+type Category struct {
+	Name   string
+	Code   string
+	Slug   string
+	Parent *Category
+}
+
+// GetCode returns category full code (combined with parent's code).
+func (c *Category) GetCode() string {
+	if c.Parent != nil {
+		return c.Parent.GetCode() + "_" + c.Code
+	}
+
+	return c.Code
+}
+
+// GetSlug returns category full slug (combined with parent's slug).
+func (c *Category) GetSlug() string {
+	if c.Parent != nil {
+		return c.Parent.GetSlug() + "/" + c.Slug
+	}
+
+	return c.Slug
+}
+
+// SetSlugAndCode sets slug and code from given string.
+func (c *Category) SetSlugAndCode(str string) {
+	str = strings.ToLower(c.Name)
+	str = categoryCodeRegExp.ReplaceAllString(str, "")
+	str = strings.Replace(str, "-", " ", -1)
+	str = strings.Replace(str, "_", " ", -1)
+	str = strings.Replace(str, "  ", "", -1)
+	str = strings.Replace(str, "  ", "", -1)
+
+	c.Slug = strings.Replace(str, " ", "-", -1)
+	c.Code = strings.Replace(str, " ", "_", -1)
+}

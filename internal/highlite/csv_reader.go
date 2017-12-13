@@ -56,6 +56,18 @@ func (c *CSVReader) Titles() []string {
 	return c.titles
 }
 
+// TitledValues returns values combined with titles.
+func (c *CSVReader) TitledValues() map[string]string {
+	res := make(map[string]string)
+	for i := 0; i < len(c.titles) && i < len(c.values); i++ {
+		key := c.titles[i]
+		val := c.values[i]
+		res[key] = val
+	}
+
+	return res
+}
+
 // ReadTitles reads values from current line and saves them as titles.
 // It returns true is the line was successfully read. False is returned
 // when an error occurred on file end was reached.
@@ -94,7 +106,7 @@ func (c *CSVReader) handleErr(err error) bool {
 	return false
 }
 
-// Splits string into slice and removes quotes
+// Splits string into slice and removes quotes.
 func parseCSVLine(str string) []string {
 	slice := strings.Split(str, ";")
 	for i, v := range slice {

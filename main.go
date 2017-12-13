@@ -61,7 +61,12 @@ func main() {
 
 	parser := highlite.NewCSVReader(highlite.GetWindows1257Decoder(file), log)
 	parser.ReadTitles()
-	for _, val := range parser.Titles() {
-		fmt.Println(val)
+	for {
+		if !parser.Next() {
+			break
+		}
+		m := parser.TitledValues()
+		p := highlite.GetProductFromCSVImport(m)
+		fmt.Printf("%s \n", p.Category3.GetSlug())
 	}
 }
