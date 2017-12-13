@@ -67,6 +67,6 @@ func main() {
 		}
 		m := parser.TitledValues()
 		p := highlite.GetProductFromCSVImport(m)
-		fmt.Printf("%s \n", p.Category3.GetSlug())
+		fmt.Printf("%s \n", p.Category3.GetURL())
 	}
 }
