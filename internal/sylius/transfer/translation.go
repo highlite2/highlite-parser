@@ -1,5 +1,9 @@
 package transfer
 
+const (
+	LocaleEn string = "en_US"
+)
+
 // Translation is a representation of translation in Sylius
 type Translation struct {
 	Description string `json:"description,omitempty"`

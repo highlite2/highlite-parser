@@ -14,6 +14,13 @@ type Taxon struct {
 	Translations map[string]Translation `json:"translations,omitempty"`
 }
 
+// TaxonNew is a structure to be used in new taxon request.
+type TaxonNew struct {
+	Code         string                 `json:"code"`
+	Parent       string                 `json:"parent,omitempty"`
+	Translations map[string]Translation `json:"translations"`
+}
+
 // TaxonRaw is a helper to parse Sylius taxon.
 // Sylius api returns different representation for Translations:
 // if there are no translations, Sylius returns an empty array,
