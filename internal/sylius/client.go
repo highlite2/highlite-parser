@@ -2,6 +2,7 @@ package sylius
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,18 +15,21 @@ import (
 )
 
 const (
-	tokenRefreshInterval   = 30 * time.Minute
-	tokenRequestRetryCount = 10
-
-	requestTimeout time.Duration = time.Second
+	tokenRefreshInterval                 = 30 * time.Minute
+	tokenRequestRetryCount               = 10
+	requestTimeout         time.Duration = time.Second
 
 	methodGet  string = "get"
 	methodPost string = "post"
 )
 
+// ErrNotFound tells that http request returned 404 Status
+var ErrNotFound = errors.New("not found")
+
 // IClient is a Sylius client interface
 type IClient interface {
 	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
+	CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error)
 }
 
 // NewClient is a Sylius client constructor.
@@ -218,6 +222,7 @@ func (c *client) requestPost(ctx context.Context, url string, result interface{}
 
 // Performs a request. Sets authorization token and handles errors.
 // Creates context with timeout.
+// TODO this method seems to be long, should consider to split it.
 func (c *client) request(ctx context.Context, method string, url string, result interface{}, body interface{}) error {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
@@ -253,11 +258,14 @@ func (c *client) request(ctx context.Context, method string, url string, result 
 		return fmt.Errorf("request to [%s] %s failed: %s", method, url, err.Error())
 	}
 
-	if res.StatusCode() != http.StatusOK {
-		c.logger.Errorf("Request to [%s] %s ended with status %s", method, url, res.Status())
-
-		return fmt.Errorf("request to [%s] %s ended with status %s", method, url, res.Status())
+	switch res.StatusCode() {
+	case http.StatusOK, http.StatusCreated:
+		return nil
+	case http.StatusNotFound:
+		return ErrNotFound
 	}
 
-	return nil
+	c.logger.Errorf("Request to [%s] %s ended with status %s", method, url, res.Status())
+
+	return fmt.Errorf("request to [%s] %s ended with status %s", method, url, res.Status())
 }

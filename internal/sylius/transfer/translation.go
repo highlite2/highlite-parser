@@ -1,6 +1,7 @@
 package transfer
 
 const (
+	// LocaleEn represents en_US locale
 	LocaleEn string = "en_US"
 )
 

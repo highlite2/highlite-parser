@@ -35,12 +35,12 @@ const (
 )
 
 // GetProductFromCSVImport creates product object from csv import data.
-func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) *Product {
+func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	cat1 := NewCategory(mapper.Get(titleCategory, values), nil)
 	cat2 := NewCategory(mapper.Get(titleSubcategory1, values), cat1)
 	cat3 := NewCategory(mapper.Get(titleSubcategory2, values), cat2)
 
-	product := &Product{
+	product := Product{
 		Category1: cat1,
 		Category2: cat2,
 		Category3: cat3,
