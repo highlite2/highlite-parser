@@ -1,5 +1,7 @@
 package highlite
 
+import "highlite-parser/internal/csv"
+
 const (
 	titleProductNo         string = "Product No."
 	titleProductName       string = "Product Name"
@@ -22,7 +24,7 @@ const (
 	titleSubstitute        string = "Substitute"
 	titleCatalogPage       string = "Catalog Page"
 	titleInStock           string = "In Stock"
-	titleExpWeekOfArrival  string = "Exp. Week of Arrival"
+	titleExpWeekOfArrival  string = "\"Exp. Week of Arrival\""
 	titleWebshop           string = "Webshop"
 	titleSubheadingEN      string = "Subheading EN"
 	titleMainDescriptionEN string = "Main Description EN"
@@ -33,10 +35,10 @@ const (
 )
 
 // GetProductFromCSVImport creates product object from csv import data.
-func GetProductFromCSVImport(input map[string]string) *Product {
-	cat1 := NewCategory(input[titleCategory], nil)
-	cat2 := NewCategory(input[titleSubcategory1], cat1)
-	cat3 := NewCategory(input[titleSubcategory2], cat2)
+func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) *Product {
+	cat1 := NewCategory(mapper.Get(titleCategory, values), nil)
+	cat2 := NewCategory(mapper.Get(titleSubcategory1, values), cat1)
+	cat3 := NewCategory(mapper.Get(titleSubcategory2, values), cat2)
 
 	product := &Product{
 		Category1: cat1,

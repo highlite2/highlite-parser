@@ -3,26 +3,19 @@ package main
 import (
 	"context"
 	"encoding/json"
-
-	apexLog "github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-
+	"fmt"
 	"os"
 
-	"fmt"
-
-	"highlite-parser/internal"
+	"highlite-parser/internal/csv"
 	"highlite-parser/internal/highlite"
+	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius"
+
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
 )
 
-func getLog() internal.ILogger {
-	apexLog.SetHandler(cli.Default)
-	apexLog.SetLevel(apexLog.DebugLevel)
-	return apexLog.Log
-}
-
-func testGetTaxon(cl sylius.IClient, l internal.ILogger) {
+func testGetTaxon(cl sylius.IClient, l log.ILogger) {
 	ctx := context.Background()
 	taxon, err := cl.GetTaxon(ctx, "category")
 	if err != nil {
@@ -38,19 +31,16 @@ func testGetTaxon(cl sylius.IClient, l internal.ILogger) {
 }
 
 func main() {
-	log := getLog()
+	logger := log.GetDefaultLog()
 
-	syliusClient := sylius.NewClient(log, "http://localhost:1221/app_dev.php/api", sylius.Auth{
+	sylClient := sylius.NewClient(logger, "http://localhost:1221/app_dev.php/api", sylius.Auth{
 		ClientID:     "demo_client",
 		ClientSecret: "secret_demo_client",
 		Username:     "api@example.com",
 		Password:     "sylius-api",
 	})
 
-	testGetTaxon(syliusClient, log)
-
-	fmt.Println()
-	fmt.Println()
+	testGetTaxon(sylClient, logger)
 
 	file, err := os.Open("./_tmp/products_v1_0.csv")
 	if err != nil {
@@ -59,14 +49,19 @@ func main() {
 
 	defer file.Close()
 
-	parser := highlite.NewCSVReader(highlite.GetWindows1257Decoder(file), log)
+	parser := csv.NewReader(transform.NewReader(file, charmap.Windows1257.NewDecoder()))
 	parser.ReadTitles()
+	mapper := csv.NewTitleMap(parser.Titles())
 	for {
 		if !parser.Next() {
 			break
 		}
-		m := parser.TitledValues()
-		p := highlite.GetProductFromCSVImport(m)
+
+		p := highlite.GetProductFromCSVImport(mapper, parser.Values())
 		fmt.Printf("%s \n", p.Category3.GetURL())
+	}
+
+	if parser.Err() != nil {
+		fmt.Println(parser.Err())
 	}
 }

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"highlite-parser/internal"
-	"highlite-parser/internal/sylius/transfer"
-
 	"github.com/go-resty/resty"
+
+	"highlite-parser/internal/log"
+	"highlite-parser/internal/sylius/transfer"
 )
 
 const (
@@ -26,11 +26,11 @@ type IClient interface {
 }
 
 // NewClient is a Sylius client constructor.
-func NewClient(log internal.ILogger, endpoint string, auth Auth) IClient {
+func NewClient(logger log.ILogger, endpoint string, auth Auth) IClient {
 	c := &client{
 		endpoint:  endpoint,
 		auth:      auth,
-		log:       log,
+		logger:    logger,
 		tokenChan: make(chan *transfer.Token),
 	}
 
@@ -52,7 +52,7 @@ type Auth struct {
 type client struct {
 	endpoint  string
 	auth      Auth
-	log       internal.ILogger
+	logger    log.ILogger
 	tokenChan chan *transfer.Token
 }
 
@@ -128,7 +128,7 @@ func (c *client) tokenServer() {
 	obtainToken := make(chan bool, 1)
 	obtainToken <- true
 
-	c.log.Debug("Starting token delivery server")
+	c.logger.Debug("Starting token delivery server")
 	for keepRunning := true; keepRunning; {
 		var tokenRequestChan chan *transfer.Token
 		if token != nil {
@@ -139,13 +139,13 @@ func (c *client) tokenServer() {
 		case tokenRequestChan <- token:
 
 		case <-obtainToken:
-			c.log.Debug("Trying to obtain token by password")
+			c.logger.Debug("Trying to obtain token by password")
 			newToken, err := c.obtainTokenByPasswordAndUsername()
 			if err != nil {
-				c.log.Errorf("Can't get token: %s", err.Error())
+				c.logger.Errorf("Can't get token: %s", err.Error())
 				keepRunning = false
 			} else {
-				c.log.Debug("Successfully received token")
+				c.logger.Debug("Successfully received token")
 				token = newToken
 				refreshToken = time.After(tokenRefreshInterval)
 			}
@@ -153,11 +153,11 @@ func (c *client) tokenServer() {
 		case <-refreshToken:
 			newToken, err := c.getTokenByRefreshToken(context.Background(), token.RefreshToken)
 			if err != nil {
-				c.log.Errorf("Can't refresh token using refresh token: %s", err.Error())
+				c.logger.Errorf("Can't refresh token using refresh token: %s", err.Error())
 				obtainToken <- true
 				token = nil
 			} else {
-				c.log.Debug("Successfully updated token")
+				c.logger.Debug("Successfully updated token")
 				token = newToken
 				refreshToken = time.After(tokenRefreshInterval)
 			}
@@ -165,7 +165,7 @@ func (c *client) tokenServer() {
 		}
 	}
 
-	c.log.Debug("Stopping token delivery server")
+	c.logger.Debug("Stopping token delivery server")
 }
 
 // Tries to get tokenChan by Username and Password.
@@ -174,7 +174,7 @@ func (c *client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
 	for i := 0; i < tokenRequestRetryCount; i++ {
 		token, err := c.getTokenByPassword(context.Background())
 		if err != nil {
-			c.log.Warnf("Failed to obtain password for the %d time: %s", i+1, err.Error())
+			c.logger.Warnf("Failed to obtain password for the %d time: %s", i+1, err.Error())
 			time.Sleep(time.Second)
 		} else {
 			return token, nil

@@ -1,4 +1,4 @@
-package internal
+package cache
 
 // IMemo is a memorization of a callback by key.
 type IMemo interface {

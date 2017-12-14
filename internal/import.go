@@ -1,11 +1,12 @@
 package internal
 
 import (
+	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
 	"highlite-parser/internal/sylius"
 )
 
-func NewImport(client sylius.IClient, memo IMemo) *Import {
+func NewImport(client sylius.IClient, memo cache.IMemo) *Import {
 	return &Import{
 		client: client,
 		memo:   memo,
@@ -14,11 +15,10 @@ func NewImport(client sylius.IClient, memo IMemo) *Import {
 
 type Import struct {
 	client sylius.IClient
-	memo   IMemo
+	memo   cache.IMemo
 }
 
 func (i *Import) ImportProduct(product *highlite.Product) {
-
 
 }
 

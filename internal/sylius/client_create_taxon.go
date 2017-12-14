@@ -1,15 +1,5 @@
 package sylius
 
-import (
-	"context"
-	"fmt"
-	"net/http"
-
-	"highlite-parser/internal/sylius/transfer"
-
-	"github.com/go-resty/resty"
-)
-
 // CreateTaxon creates a taxon
 /*func (c *client) CreateTaxon(ctx context.Context, taxon *transfer.TaxonNew) (*transfer.Taxon, error) {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)

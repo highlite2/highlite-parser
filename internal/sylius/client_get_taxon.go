@@ -17,7 +17,7 @@ func (c *client) GetTaxon(ctx context.Context, code string) (*transfer.Taxon, er
 
 	url := c.getURL("/v1/taxons/%s", code)
 
-	c.log.Debug("getting token")
+	c.logger.Debug("getting token")
 	token, err := c.getToken()
 	if err != nil {
 		return nil, err
