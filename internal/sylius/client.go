@@ -18,6 +18,9 @@ const (
 	tokenRequestRetryCount = 10
 
 	requestTimeout time.Duration = time.Second
+
+	methodGet  string = "get"
+	methodPost string = "post"
 )
 
 // IClient is a Sylius client interface
@@ -201,4 +204,52 @@ func (c *client) getURL(path string, args ...interface{}) string {
 	}
 
 	return strings.TrimSuffix(c.endpoint, "/") + "/" + strings.TrimPrefix(path, "/")
+}
+
+// Performs GET request
+func (c *client) requestGet(ctx context.Context, url string, result interface{}) error {
+	return c.request(ctx, methodGet, url, result)
+}
+
+// Performs a request. Sets authorization token and handles errors.
+// Creates context with timeout.
+func (c *client) request(ctx context.Context, method string, url string, result interface{}) error {
+	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
+	defer cancel()
+
+	var err error
+
+	token, err := c.getToken()
+	if err != nil {
+		c.logger.Errorf("Failed to get token during [%s] %s request", method, url)
+
+		return err
+	}
+
+	request := resty.R().SetContext(ctx).SetHeader("Authorization", "Bearer "+token).SetResult(result)
+
+	var res *resty.Response
+
+	switch method {
+	case methodGet:
+		res, err = request.Get(url)
+	case methodPost:
+		res, err = request.Post(url)
+	default:
+		err = fmt.Errorf("unknown method")
+	}
+
+	if err != nil {
+		c.logger.Errorf("Request to [%s] %s failed: %s", method, url, err.Error())
+
+		return fmt.Errorf("request to [%s] %s failed: %s", method, url, err.Error())
+	}
+
+	if res.StatusCode() != http.StatusOK {
+		c.logger.Errorf("Request to [%s] %s ended with status %s", method, url, res.Status())
+
+		return fmt.Errorf("request to [%s] %s ended with status %s", method, url, res.Status())
+	}
+
+	return nil
 }
