@@ -208,12 +208,17 @@ func (c *client) getURL(path string, args ...interface{}) string {
 
 // Performs GET request
 func (c *client) requestGet(ctx context.Context, url string, result interface{}) error {
-	return c.request(ctx, methodGet, url, result)
+	return c.request(ctx, methodGet, url, result, nil)
+}
+
+// Performs POST request
+func (c *client) requestPost(ctx context.Context, url string, result interface{}, body interface{}) error {
+	return c.request(ctx, methodPost, url, result, body)
 }
 
 // Performs a request. Sets authorization token and handles errors.
 // Creates context with timeout.
-func (c *client) request(ctx context.Context, method string, url string, result interface{}) error {
+func (c *client) request(ctx context.Context, method string, url string, result interface{}, body interface{}) error {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
 
@@ -227,6 +232,9 @@ func (c *client) request(ctx context.Context, method string, url string, result 
 	}
 
 	request := resty.R().SetContext(ctx).SetHeader("Authorization", "Bearer "+token).SetResult(result)
+	if body != nil {
+		request.SetBody(body)
+	}
 
 	var res *resty.Response
 
