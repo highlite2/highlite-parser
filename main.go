@@ -11,12 +11,15 @@ import (
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius"
 
+	"time"
+
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	logger := log.GetDefaultLog()
 
@@ -44,16 +47,26 @@ func main() {
 
 	logger.Info("Start csv file processing")
 
-	for {
-		if !parser.Next() {
-			break
-		}
+	for run := true; run; {
+		select {
 
-		pr := highlite.GetProductFromCSVImport(mapper, parser.Values())
-		logger.Debugf("Processing pr: %s", pr.Category3.GetURL())
+		case <-ctx.Done():
+			logger.Info("Context timeout")
+			run = false
 
-		if err := writer.WriteProduct(ctx, pr); err != nil {
-			logger.Errorf("Product processing error: %s", err.Error())
+		default:
+			if !parser.Next() {
+				run = false
+				break
+			}
+
+			pr := highlite.GetProductFromCSVImport(mapper, parser.Values())
+			logger.Debugf("Processing pr: %s", pr.Category3.GetURL())
+
+			if err := writer.WriteProduct(ctx, pr); err != nil {
+				logger.Errorf("Product processing error: %s", err.Error())
+			}
+
 		}
 	}
 

@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	tokenRefreshInterval                 = 30 * time.Minute
-	tokenRequestRetryCount               = 10
+	tokenRequestRetryCount int           = 10
+	tokenRefreshInterval   time.Duration = 30 * time.Minute
 	requestTimeout         time.Duration = 5 * time.Second
 
 	methodGet  string = "get"
@@ -26,19 +26,22 @@ const (
 // ErrNotFound tells that http request returned 404 Status
 var ErrNotFound = errors.New("not found")
 
-// IClient is a Sylius client interface
+// IClient is a Sylius Client interface
 type IClient interface {
 	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
 	CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error)
 }
 
-// NewClient is a Sylius client constructor.
-func NewClient(logger log.ILogger, endpoint string, auth Auth) IClient {
-	c := &client{
-		endpoint:  endpoint,
-		auth:      auth,
-		logger:    logger,
-		tokenChan: make(chan *transfer.Token),
+var _ IClient = (*Client)(nil)
+
+// NewClient is a Sylius Client constructor.
+func NewClient(logger log.ILogger, endpoint string, auth Auth) *Client {
+	c := &Client{
+		endpoint:       endpoint,
+		auth:           auth,
+		logger:         logger,
+		tokenChan:      make(chan *transfer.Token),
+		requestTimeout: requestTimeout,
 	}
 
 	go c.tokenServer()
@@ -56,16 +59,23 @@ type Auth struct {
 	Password     string
 }
 
-type client struct {
-	endpoint  string
-	auth      Auth
-	logger    log.ILogger
-	tokenChan chan *transfer.Token
+// Client is a sylius api client
+type Client struct {
+	endpoint       string
+	auth           Auth
+	logger         log.ILogger
+	requestTimeout time.Duration
+	tokenChan      chan *transfer.Token
+}
+
+// SetRequestTimeout sets request timeout
+func (c *Client) SetRequestTimeout(t time.Duration) {
+	c.requestTimeout = t
 }
 
 // Gets tokenChan by Username and Password.
-func (c *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error) {
-	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
+func (c *Client) getTokenByPassword(ctx context.Context) (*transfer.Token, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
 	url := c.getURL("/oauth/v2/token")
@@ -96,8 +106,8 @@ func (c *client) getTokenByPassword(ctx context.Context) (*transfer.Token, error
 }
 
 // Gets tokenChan by refresh tokenChan.
-func (c *client) getTokenByRefreshToken(ctx context.Context, refreshToken string) (*transfer.Token, error) {
-	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
+func (c *Client) getTokenByRefreshToken(ctx context.Context, refreshToken string) (*transfer.Token, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
 	url := c.getURL("/oauth/v2/token")
@@ -128,7 +138,7 @@ func (c *client) getTokenByRefreshToken(ctx context.Context, refreshToken string
 
 // Token delivery server. Gets tokens from Sylius OAuth server and writes them to a channel.
 // Makes a token background update.
-func (c *client) tokenServer() {
+func (c *Client) tokenServer() {
 	var token *transfer.Token
 
 	refreshToken := make(<-chan time.Time)
@@ -177,7 +187,7 @@ func (c *client) tokenServer() {
 
 // Tries to get tokenChan by Username and Password.
 // Retries for a const amount of times if api request fails.
-func (c *client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
+func (c *Client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
 	for i := 0; i < tokenRequestRetryCount; i++ {
 		token, err := c.getTokenByPassword(context.Background())
 		if err != nil {
@@ -192,7 +202,7 @@ func (c *client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
 }
 
 // Gets a token.
-func (c *client) getToken() (string, error) {
+func (c *Client) getToken() (string, error) {
 	token, ok := <-c.tokenChan
 	if !ok {
 		return "", fmt.Errorf("can't get token: token chan was closed")
@@ -202,7 +212,7 @@ func (c *client) getToken() (string, error) {
 }
 
 // Returns full url using endpoint and resource paths.
-func (c *client) getURL(path string, args ...interface{}) string {
+func (c *Client) getURL(path string, args ...interface{}) string {
 	if len(args) > 0 {
 		path = fmt.Sprintf(path, args...)
 	}
@@ -211,20 +221,20 @@ func (c *client) getURL(path string, args ...interface{}) string {
 }
 
 // Performs GET request
-func (c *client) requestGet(ctx context.Context, url string, result interface{}) error {
+func (c *Client) requestGet(ctx context.Context, url string, result interface{}) error {
 	return c.request(ctx, methodGet, url, result, nil)
 }
 
 // Performs POST request
-func (c *client) requestPost(ctx context.Context, url string, result interface{}, body interface{}) error {
+func (c *Client) requestPost(ctx context.Context, url string, result interface{}, body interface{}) error {
 	return c.request(ctx, methodPost, url, result, body)
 }
 
 // Performs a request. Sets authorization token and handles errors.
 // Creates context with timeout.
 // TODO this method seems to be long, should consider to split it.
-func (c *client) request(ctx context.Context, method string, url string, result interface{}, body interface{}) error {
-	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
+func (c *Client) request(ctx context.Context, method string, url string, result interface{}, body interface{}) error {
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
 	var err error
