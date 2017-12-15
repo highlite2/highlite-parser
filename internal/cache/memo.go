@@ -2,7 +2,7 @@ package cache
 
 // IMemo is a memorization of a callback by key.
 type IMemo interface {
-	// Get takes the value for a key from cache, and if there is no such,
+	// GetString takes the value for a key from cache, and if there is no such,
 	// executes the callback and puts the result into the cache.
 	Get(key string, callback MemoCallback) (interface{}, error)
 }
@@ -42,7 +42,7 @@ func NewMemo() IMemo {
 	return m
 }
 
-// Get takes the value for a key from cache, and if there is no such,
+// GetString takes the value for a key from cache, and if there is no such,
 // executes the callback and puts the result into the cache.
 func (m *memo) Get(key string, callback MemoCallback) (interface{}, error) {
 	response := make(chan memoResult)

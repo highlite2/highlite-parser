@@ -1,5 +1,7 @@
 package csv
 
+import "strconv"
+
 // NewTitleMap creates new TitleMap object and executes
 // titles initialization
 func NewTitleMap(titles []string) *TitleMap {
@@ -28,15 +30,33 @@ func (t *TitleMap) Init(titles []string) {
 	}
 }
 
-// Get finds a value from values slice by title. First, it gets title index
-// from title map, and then gets the value from values slice by that index.
-func (t *TitleMap) Get(title string, values []string) string {
+// GetString finds a value from values slice by title. First, it gets title index
+// from title map, and then gets the string value from values slice by that index.
+func (t *TitleMap) GetString(title string, values []string) string {
 	i, ok := t.titles[title]
 	if ok && i < len(values) {
 		return t.processValue(values[i])
 	}
 
 	return ""
+}
+
+// GetFloat finds a value from values slice by title. First, it gets title index
+// from title map, and then gets the float64 value from values slice by that index.
+func (t *TitleMap) GetFloat(title string, values []string) float64 {
+	str := t.GetString(title, values)
+	val, _ := strconv.ParseFloat(str, 64)
+
+	return val
+}
+
+// GetInt finds a value from values slice by title. First, it gets title index
+// from title map, and then gets the int64 value from values slice by that index.
+func (t *TitleMap) GetInt(title string, values []string) int64 {
+	str := t.GetString(title, values)
+	val, _ := strconv.ParseInt(str, 10, 64)
+
+	return val
 }
 
 // Calls a callback if it is set.
