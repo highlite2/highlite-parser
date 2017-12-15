@@ -253,6 +253,8 @@ func (c *Client) request(ctx context.Context, method string, url string, result 
 
 	var res *resty.Response
 
+	c.logger.Debugf("Performing [%s] request to %s", method, url)
+
 	switch method {
 	case methodGet:
 		res, err = request.Get(url)
