@@ -17,7 +17,7 @@ import (
 const (
 	tokenRefreshInterval                 = 30 * time.Minute
 	tokenRequestRetryCount               = 10
-	requestTimeout         time.Duration = time.Second
+	requestTimeout         time.Duration = 5 * time.Second
 
 	methodGet  string = "get"
 	methodPost string = "post"
@@ -253,9 +253,9 @@ func (c *client) request(ctx context.Context, method string, url string, result 
 	}
 
 	if err != nil {
-		c.logger.Errorf("Request to [%s] %s failed: %s", method, url, err.Error())
+		c.logger.Errorf(err.Error())
 
-		return fmt.Errorf("request to [%s] %s failed: %s", method, url, err.Error())
+		return fmt.Errorf(err.Error())
 	}
 
 	switch res.StatusCode() {

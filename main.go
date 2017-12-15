@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"highlite-parser/internal"
@@ -30,7 +29,7 @@ func main() {
 
 	memo := cache.NewMemo()
 
-	writer := internal.NewWriter(client, memo)
+	writer := internal.NewWriter(client, memo, logger)
 
 	file, err := os.Open("./_tmp/products_v1_0.csv")
 	if err != nil {
@@ -43,20 +42,24 @@ func main() {
 	parser.ReadTitles()
 	mapper := csv.NewTitleMap(parser.Titles())
 
+	logger.Info("Start csv file processing")
+
 	for {
 		if !parser.Next() {
 			break
 		}
 
-		product := highlite.GetProductFromCSVImport(mapper, parser.Values())
-		fmt.Printf("%#v \n\n", product)
+		pr := highlite.GetProductFromCSVImport(mapper, parser.Values())
+		logger.Debugf("Processing pr: %s", pr.Category3.GetURL())
 
-		writer.WriteProduct(ctx, product)
-
-		break
+		if err := writer.WriteProduct(ctx, pr); err != nil {
+			logger.Errorf("Product processing error: %s", err.Error())
+		}
 	}
 
 	if parser.Err() != nil {
-		fmt.Println(parser.Err())
+		logger.Errorf("Csv processing error: %s", parser.Err().Error())
 	}
+
+	logger.Info("Stop csv file processing")
 }
