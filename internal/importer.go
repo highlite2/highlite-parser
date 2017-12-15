@@ -37,7 +37,7 @@ func (w *Importer) ImportProduct(ctx context.Context, p highlite.Product) error 
 	return nil
 }
 
-// Imports a category. First tries to check if the category exists. It it doesn't, it makes
+// Imports a category. First tries to check if the category exists. If it doesn't, makes
 // a recursive call to import a parent category (if there is a link to parent category). After
 // parent category is imported (actually it could be cached already) - it creates the current
 // category.
