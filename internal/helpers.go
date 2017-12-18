@@ -5,7 +5,7 @@ import (
 	"highlite-parser/internal/sylius/transfer"
 )
 
-// CreateNewTaxonFromHighliteCategory converts highlite category to taxon struct
+// CreateNewTaxonFromHighliteCategory converts highlite category to sylius taxon struct
 func CreateNewTaxonFromHighliteCategory(cat *highlite.Category) transfer.TaxonNew {
 	taxon := transfer.TaxonNew{
 		Code: cat.GetCode(),
@@ -26,4 +26,25 @@ func CreateNewTaxonFromHighliteCategory(cat *highlite.Category) transfer.TaxonNe
 	}
 
 	return taxon
+}
+
+// CreateNewProductFromHighliteProduct converts highlite product to sylius product struct
+func CreateNewProductFromHighliteProduct(p highlite.Product) transfer.ProductNew {
+	product := transfer.ProductNew{
+		Code: p.Code,
+		Translations: map[string]transfer.Translation{
+			transfer.LocaleEn: {
+				Name: p.Name,
+				Slug: p.URL,
+			},
+			transfer.LocaleRu: {
+				Name: p.Name,
+				Slug: p.URL,
+			},
+		},
+		MainTaxon:     p.Category3.GetCode(),
+		ProductTaxons: p.Category3.GetCode(),
+	}
+
+	return product
 }

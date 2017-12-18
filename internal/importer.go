@@ -29,9 +29,19 @@ type Importer struct {
 
 // ImportProduct imports highlite product into sylius.
 func (w *Importer) ImportProduct(ctx context.Context, p highlite.Product) error {
-	_, err := w.importCategory(ctx, p.Category3)
-	if err != nil {
-		return err
+	if _, err := w.client.GetProduct(ctx, p.Code); err != nil {
+		if err != sylius.ErrNotFound {
+			return err
+		}
+
+		if _, err := w.importCategory(ctx, p.Category3); err != nil {
+			return err
+		}
+
+		_, err := w.client.CreateProduct(ctx, CreateNewProductFromHighliteProduct(p))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -94,7 +104,7 @@ func (w *Importer) memoCreateCategory(ctx context.Context, category *highlite.Ca
 	return castToTaxon(data)
 }
 
-// Casts an interface{} type to *transfer.Taxon
+// Casts an interface{} type to *transfer.Taxon.
 func castToTaxon(data interface{}) (*transfer.Taxon, error) {
 	taxon, ok := data.(*transfer.Taxon)
 	if !ok {

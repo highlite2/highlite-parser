@@ -31,6 +31,7 @@ type IClient interface {
 	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
 	CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error)
 	GetProduct(ctx context.Context, code string) (*transfer.Product, error)
+	CreateProduct(ctx context.Context, body transfer.ProductNew) (*transfer.Product, error)
 }
 
 var _ IClient = (*Client)(nil)
@@ -278,7 +279,7 @@ func (c *Client) request(ctx context.Context, method string, url string, result 
 		return ErrNotFound
 	}
 
-	c.logger.Errorf("Request to [%s] %s ended with status %s", method, url, res.Status())
+	c.logger.Errorf("[%s] %s %s %s", method, url, res.Status(), string(res.Body()))
 
-	return fmt.Errorf("request to [%s] %s ended with status %s", method, url, res.Status())
+	return fmt.Errorf("%s", res.Status())
 }

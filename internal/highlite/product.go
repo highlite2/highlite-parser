@@ -36,6 +36,8 @@ const (
 
 // Product is a highlite product.
 type Product struct {
+	Identification
+
 	No          string
 	Name        string
 	SubHeading  string
@@ -80,6 +82,8 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 		Height:  mapper.GetFloat(titleHeight, values),
 		Price:   mapper.GetFloat(titleUnitPrice, values),
 	}
+
+	product.SetCodeAndURL(product.Name + " " + product.No)
 
 	return product
 }

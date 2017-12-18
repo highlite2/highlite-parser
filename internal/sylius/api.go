@@ -38,3 +38,14 @@ func (c *Client) GetProduct(ctx context.Context, code string) (*transfer.Product
 
 	return result, nil
 }
+
+// CreateProduct creates a product.
+func (c *Client) CreateProduct(ctx context.Context, body transfer.ProductNew) (*transfer.Product, error) {
+	result := &transfer.Product{}
+	err := c.requestPost(ctx, c.getURL("/v1/products/"), result, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
