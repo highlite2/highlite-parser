@@ -32,6 +32,8 @@ type IClient interface {
 	CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error)
 	GetProduct(ctx context.Context, code string) (*transfer.Product, error)
 	CreateProduct(ctx context.Context, body transfer.ProductNew) (*transfer.Product, error)
+
+	CreateProductVariant(ctx context.Context, product string, body transfer.ProductVariantNew) (*transfer.ProductVariant, error)
 }
 
 var _ IClient = (*Client)(nil)

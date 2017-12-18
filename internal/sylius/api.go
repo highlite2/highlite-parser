@@ -49,3 +49,14 @@ func (c *Client) CreateProduct(ctx context.Context, body transfer.ProductNew) (*
 
 	return result, nil
 }
+
+// CreateProductVariant creates a product.
+func (c *Client) CreateProductVariant(ctx context.Context, product string, body transfer.ProductVariantNew) (*transfer.ProductVariant, error) {
+	result := &transfer.ProductVariant{}
+	err := c.requestPost(ctx, c.getURL("/v1/products/%s/variants/", product), result, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

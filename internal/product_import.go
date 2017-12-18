@@ -35,13 +35,35 @@ func (i *ProductImport) Import(ctx context.Context, p highlite.Product) error {
 			return err
 		}
 
-		_, err := i.client.CreateProduct(ctx, i.createNewProductFromHighliteProduct(p))
+		product, err := i.client.CreateProduct(ctx, i.createNewProductFromHighliteProduct(p))
 		if err != nil {
+			return err
+		}
+
+		newVariant := i.createNewProductVariantFromHighliteProduct(p)
+		if _, err := i.client.CreateProductVariant(ctx, product.Code, newVariant); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// Converts highlite product to sylius product variant struct.
+func (i *ProductImport) createNewProductVariantFromHighliteProduct(p highlite.Product) transfer.ProductVariantNew {
+	variant := transfer.ProductVariantNew{
+		Code: p.Code + "_main",
+		Translations: map[string]transfer.Translation{ // TODO take info from available locales from config
+			transfer.LocaleEn: {
+				Name: p.Name,
+			},
+			transfer.LocaleRu: {
+				Name: p.Name,
+			},
+		},
+	}
+
+	return variant
 }
 
 // Converts highlite product to sylius product struct.
