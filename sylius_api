@@ -6,8 +6,8 @@ curl http://localhost:1221/app_dev.php/api/oauth/v2/token \
     -d "password"=sylius-api
 
 # Product request
-$ curl http://localhost:1221/app_dev.php/api/v1/products/0a7131a0-4200-3504-835e-b80f6bb33cdb \
-    -H "Authorization: Bearer YWM2ZThmYmY3ZmRhNDhhZWI1MzkyZWU3OTQ4YTJhNjc5YzNhMzg0YTFiNjI4ZTg5N2QyNGY3Y2ZlYmVhNGM3Mg" \
+$ curl http://localhost:1221/app_dev.php/api/v1/products/lcd_504_100205 \
+    -H "Authorization: Bearer ZTkzODllMDUxZGM4MzY1NmZlYWU1ZjlkNDE3M2ZlODg2ZGVkNzU2MmEzYWFjMDM1MTc1MTM0MmNmNzFmMWY2Yg" \
     -H "Accept: application/json"
 
 $ curl http://localhost:1221/app_dev.php/api/v1/products/002a86a0-f7bd-31c4-8a36-1d1267ee2086 \

@@ -9,7 +9,7 @@ import (
 func CreateNewTaxonFromHighliteCategory(cat *highlite.Category) transfer.TaxonNew {
 	taxon := transfer.TaxonNew{
 		Code: cat.GetCode(),
-		Translations: map[string]transfer.Translation{
+		Translations: map[string]transfer.Translation{ // TODO take info from available locales from config
 			transfer.LocaleEn: {
 				Name: cat.Name,
 				Slug: cat.GetURL(),
@@ -32,7 +32,7 @@ func CreateNewTaxonFromHighliteCategory(cat *highlite.Category) transfer.TaxonNe
 func CreateNewProductFromHighliteProduct(p highlite.Product) transfer.ProductNew {
 	product := transfer.ProductNew{
 		Code: p.Code,
-		Translations: map[string]transfer.Translation{
+		Translations: map[string]transfer.Translation{ // TODO take info from available locales from config
 			transfer.LocaleEn: {
 				Name: p.Name,
 				Slug: p.URL,
@@ -44,6 +44,9 @@ func CreateNewProductFromHighliteProduct(p highlite.Product) transfer.ProductNew
 		},
 		MainTaxon:     p.Category3.GetCode(),
 		ProductTaxons: p.Category3.GetCode(),
+		Channels: []string{
+			"US_WEB", // TODO take it from config
+		},
 	}
 
 	return product

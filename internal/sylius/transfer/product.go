@@ -18,4 +18,5 @@ type ProductNew struct {
 	Images        []Image                `json:"images,omitempty"`
 	MainTaxon     string                 `json:"mainTaxon,omitempty"`
 	ProductTaxons string                 `json:"productTaxons,omitempty"` // String in which the codes of taxons was written down (separated by comma)
+	Channels      []string               `json:"channels,omitempty"`
 }
