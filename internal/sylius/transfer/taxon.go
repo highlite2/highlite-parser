@@ -25,6 +25,7 @@ type TaxonNew struct {
 // Sylius api returns different representation for Translations:
 // if there are no translations, Sylius returns an empty array,
 // if not empty - an object.
+// TODO check if it is still actual information
 type TaxonRaw struct {
 	Taxon
 	Parent       *TaxonRaw       `json:"parent"`

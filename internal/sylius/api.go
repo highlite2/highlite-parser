@@ -27,3 +27,14 @@ func (c *Client) CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*tran
 
 	return transfer.ConvertRawTaxon(result), nil
 }
+
+// GetProduct gets a product by code
+func (c *Client) GetProduct(ctx context.Context, code string) (*transfer.Product, error) {
+	result := &transfer.Product{}
+	err := c.requestGet(ctx, c.getURL("/v1/products/%s", code), result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

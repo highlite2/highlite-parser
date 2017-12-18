@@ -30,6 +30,7 @@ var ErrNotFound = errors.New("not found")
 type IClient interface {
 	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
 	CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error)
+	GetProduct(ctx context.Context, code string) (*transfer.Product, error)
 }
 
 var _ IClient = (*Client)(nil)
