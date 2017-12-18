@@ -14,6 +14,10 @@ func CreateNewTaxonFromHighliteCategory(cat *highlite.Category) transfer.TaxonNe
 				Name: cat.Name,
 				Slug: cat.GetURL(),
 			},
+			transfer.LocaleRu: {
+				Name: cat.Name,
+				Slug: cat.GetURL(),
+			},
 		},
 	}
 

@@ -7,7 +7,11 @@ curl http://localhost:1221/app_dev.php/api/oauth/v2/token \
 
 # Product request
 $ curl http://localhost:1221/app_dev.php/api/v1/products/0a7131a0-4200-3504-835e-b80f6bb33cdb \
-    -H "Authorization: Bearer YzFhZmM2ZDJjM2U4NjZiMDUxZDg5MTkxNDI1ZGY5YTA5MGJkMmVjMjUxYjM5Nzg3OTk1NmU4ZTQ1Njc4MmQxMw" \
+    -H "Authorization: Bearer YWM2ZThmYmY3ZmRhNDhhZWI1MzkyZWU3OTQ4YTJhNjc5YzNhMzg0YTFiNjI4ZTg5N2QyNGY3Y2ZlYmVhNGM3Mg" \
+    -H "Accept: application/json"
+
+$ curl http://localhost:1221/app_dev.php/api/v1/products/002a86a0-f7bd-31c4-8a36-1d1267ee2086 \
+    -H "Authorization: Bearer YWM2ZThmYmY3ZmRhNDhhZWI1MzkyZWU3OTQ4YTJhNjc5YzNhMzg0YTFiNjI4ZTg5N2QyNGY3Y2ZlYmVhNGM3Mg" \
     -H "Accept: application/json"
 
 $ curl http://localhost:1221/app_dev.php/api/v1/products/0a7131a0-4200-3504-835e-b80f6bb33cdb/variants/ \
