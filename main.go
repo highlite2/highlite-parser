@@ -33,7 +33,7 @@ func main() {
 
 	memo := cache.NewMemo()
 
-	importer := internal.NewImporter(client, memo, logger)
+	productImport := internal.NewProductImport(client, memo, logger)
 
 	file, err := os.Open("./_tmp/products_v1_0.csv")
 	if err != nil {
@@ -65,7 +65,7 @@ func main() {
 			pr := highlite.GetProductFromCSVImport(mapper, parser.Values())
 			logger.Debugf("Processing product: category %s", pr.Category3.GetURL())
 
-			if err := importer.ImportProduct(ctx, pr); err != nil {
+			if err := productImport.Import(ctx, pr); err != nil {
 				logger.Errorf("Product processing error: %s", err.Error())
 			}
 
