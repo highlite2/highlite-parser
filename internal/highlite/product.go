@@ -3,6 +3,28 @@ package highlite
 import "highlite-parser/internal/csv"
 
 const (
+	// StatusCurrent ...
+	StatusCurrent string = "CURRENT"
+	// StatusDecline ...
+	StatusDecline string = "DECLINE"
+	// StatusSpecial ...
+	StatusSpecial string = "SPECIAL"
+	// StatusNew ...
+	StatusNew string = "NEW"
+	// StatusEOL ...
+	StatusEOL string = "EOL"
+	// StatusOnRequest ...
+	StatusOnRequest string = "ONREQUEST"
+
+	// InStockYes ...
+	InStockYes string = "YES"
+	// InStockNo ...
+	InStockNo string = "NO"
+	// InStockLow ...
+	InStockLow string = "LOW"
+)
+
+const (
 	titleProductNo         string = "Product No."
 	titleProductName       string = "Product Name"
 	titleCountryOfOrigin   string = "Country of Origin"
@@ -45,6 +67,9 @@ type Product struct {
 	Specs       string
 	Brand       string
 
+	InStock string
+	Status  string
+
 	Country string
 	Weight  float64
 	Length  float64
@@ -64,10 +89,6 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	cat3 := NewCategory(mapper.GetString(titleSubcategory2, values), cat2)
 
 	product := Product{
-		Category1: cat1,
-		Category2: cat2,
-		Category3: cat3,
-
 		No:          mapper.GetString(titleProductNo, values),
 		Name:        mapper.GetString(titleProductName, values),
 		SubHeading:  mapper.GetString(titleSubheadingEN, values),
@@ -75,12 +96,19 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 		Specs:       mapper.GetString(titleSpecsEN, values),
 		Brand:       mapper.GetString(titleBrand, values),
 
+		InStock: mapper.GetString(titleInStock, values),
+		Status:  mapper.GetString(titleStatus, values),
+
 		Country: mapper.GetString(titleCountryOfOrigin, values),
 		Weight:  mapper.GetFloat(titleWeight, values),
 		Length:  mapper.GetFloat(titleLength, values),
 		Width:   mapper.GetFloat(titleWidth, values),
 		Height:  mapper.GetFloat(titleHeight, values),
 		Price:   mapper.GetFloat(titleUnitPrice, values),
+
+		Category1: cat1,
+		Category2: cat2,
+		Category3: cat3,
 	}
 
 	product.SetCodeAndURL(product.Name + " " + product.No)

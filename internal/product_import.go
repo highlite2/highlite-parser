@@ -51,9 +51,11 @@ func (i *ProductImport) Import(ctx context.Context, p highlite.Product) error {
 
 // Converts highlite product to sylius product variant struct.
 func (i *ProductImport) createNewProductVariantFromHighliteProduct(p highlite.Product) transfer.ProductVariantNew {
+	channel := "US_WEB" // TODO take it from config
+
 	variant := transfer.ProductVariantNew{
 		Code: p.Code + "_main",
-		Translations: map[string]transfer.Translation{ // TODO take info from available locales from config
+		Translations: map[string]transfer.Translation{
 			transfer.LocaleEn: {
 				Name: p.Name,
 			},
@@ -61,6 +63,15 @@ func (i *ProductImport) createNewProductVariantFromHighliteProduct(p highlite.Pr
 				Name: p.Name,
 			},
 		},
+		ChannelPrices: map[string]transfer.ChannelPrice{
+			channel: {
+				Price: p.Price,
+			},
+		},
+		Width:  p.Width,
+		Height: p.Height,
+		Weight: p.Weight,
+		Depth:  p.Length,
 	}
 
 	return variant
@@ -68,23 +79,26 @@ func (i *ProductImport) createNewProductVariantFromHighliteProduct(p highlite.Pr
 
 // Converts highlite product to sylius product struct.
 func (i *ProductImport) createNewProductFromHighliteProduct(p highlite.Product) transfer.ProductNew {
+	channel := "US_WEB" // TODO take it from config
+
 	product := transfer.ProductNew{
-		Code: p.Code,
-		Translations: map[string]transfer.Translation{ // TODO take info from available locales from config
+		Enabled: true,
+		Code:    p.Code,
+		Translations: map[string]transfer.Translation{
 			transfer.LocaleEn: {
-				Name: p.Name,
-				Slug: p.URL,
+				Name:        p.Name,
+				Slug:        p.URL,
+				Description: p.Description,
 			},
 			transfer.LocaleRu: {
-				Name: p.Name,
-				Slug: p.URL,
+				Name:        p.Name,
+				Slug:        p.URL,
+				Description: p.Description,
 			},
 		},
 		MainTaxon:     p.Category3.GetCode(),
 		ProductTaxons: p.Category3.GetCode(),
-		Channels: []string{
-			"US_WEB", // TODO take it from config
-		},
+		Channels:      []string{channel},
 	}
 
 	return product
