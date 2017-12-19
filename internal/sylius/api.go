@@ -29,8 +29,8 @@ func (c *Client) CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*tran
 }
 
 // GetProduct gets a product by code
-func (c *Client) GetProduct(ctx context.Context, code string) (*transfer.Product, error) {
-	result := &transfer.Product{}
+func (c *Client) GetProduct(ctx context.Context, code string) (*transfer.ProductEntire, error) {
+	result := &transfer.ProductEntire{}
 	err := c.requestGet(ctx, c.getURL("/v1/products/%s", code), result)
 	if err != nil {
 		return nil, err
@@ -40,14 +40,24 @@ func (c *Client) GetProduct(ctx context.Context, code string) (*transfer.Product
 }
 
 // CreateProduct creates a product.
-func (c *Client) CreateProduct(ctx context.Context, body transfer.ProductNew) (*transfer.Product, error) {
-	result := &transfer.Product{}
+func (c *Client) CreateProduct(ctx context.Context, body transfer.Product) (*transfer.ProductEntire, error) {
+	result := &transfer.ProductEntire{}
 	err := c.requestPost(ctx, c.getURL("/v1/products/"), result, body)
 	if err != nil {
 		return nil, err
 	}
 
 	return result, nil
+}
+
+// UpdateProduct updates product.
+func (c *Client) UpdateProduct(ctx context.Context, body transfer.Product) error {
+	err := c.requestPatch(ctx, c.getURL("/v1/products/%s", body.Code), body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // CreateProductVariant creates a product.

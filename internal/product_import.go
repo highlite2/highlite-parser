@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"strings"
 
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
@@ -25,23 +26,32 @@ type ProductImport struct {
 }
 
 // Import imports highlite product into sylius.
-func (i *ProductImport) Import(ctx context.Context, p highlite.Product) error {
-	if _, err := i.client.GetProduct(ctx, p.Code); err != nil {
+func (i *ProductImport) Import(ctx context.Context, h highlite.Product) error {
+	if product, err := i.client.GetProduct(ctx, h.Code); err != nil {
 		if err != sylius.ErrNotFound {
 			return err
 		}
 
-		if _, err := i.categoryImport.Import(ctx, p.Category3); err != nil {
+		if _, err := i.categoryImport.Import(ctx, h.Category3); err != nil {
 			return err
 		}
 
-		product, err := i.client.CreateProduct(ctx, i.createNewProductFromHighliteProduct(p))
+		data := i.getProductFromHighlite(transfer.ProductEntire{}, h)
+		if !data.Enabled {
+			return nil
+		}
+
+		product, err := i.client.CreateProduct(ctx, data)
 		if err != nil {
 			return err
 		}
 
-		newVariant := i.createNewProductVariantFromHighliteProduct(p)
-		if _, err := i.client.CreateProductVariant(ctx, product.Code, newVariant); err != nil {
+		variant := i.createNewProductVariantFromHighliteProduct(h)
+		if _, err := i.client.CreateProductVariant(ctx, product.Code, variant); err != nil {
+			return err
+		}
+	} else {
+		if err := i.client.UpdateProduct(ctx, i.getProductFromHighlite(*product, h)); err != nil {
 			return err
 		}
 	}
@@ -77,29 +87,33 @@ func (i *ProductImport) createNewProductVariantFromHighliteProduct(p highlite.Pr
 	return variant
 }
 
-// Converts highlite product to sylius product struct.
-func (i *ProductImport) createNewProductFromHighliteProduct(p highlite.Product) transfer.ProductNew {
+// Creates sylius Product structure from higlite product structure.
+func (i *ProductImport) getProductFromHighlite(entire transfer.ProductEntire, h highlite.Product) transfer.Product {
 	channel := "US_WEB" // TODO take it from config
 
-	product := transfer.ProductNew{
-		Enabled: true,
-		Code:    p.Code,
-		Translations: map[string]transfer.Translation{
-			transfer.LocaleEn: {
-				Name:        p.Name,
-				Slug:        p.URL,
-				Description: p.Description,
-			},
-			transfer.LocaleRu: {
-				Name:        p.Name,
-				Slug:        p.URL,
-				Description: p.Description,
-			},
+	p := transfer.Product{ProductEntire: entire}
+	p.Code = h.Code
+	p.MainTaxon = h.Category3.GetCode()
+	p.ProductTaxons = strings.Join([]string{h.Category3.GetCode(), h.Category2.GetCode(), h.Category1.GetCode()}, ",")
+	p.Channels = []string{channel}
+	p.Translations = map[string]transfer.Translation{
+		transfer.LocaleEn: {
+			Name:        h.Name,
+			Slug:        h.URL,
+			Description: h.Description,
 		},
-		MainTaxon:     p.Category3.GetCode(),
-		ProductTaxons: p.Category3.GetCode(),
-		Channels:      []string{channel},
+		transfer.LocaleRu: { // TODO "temporary" don't overwrite Russian description - it should be taken from Russian translations
+			Name:        h.Name,
+			Slug:        h.URL,
+			Description: h.Description,
+		},
+	}
+	p.Enabled = true
+
+	switch h.Status {
+	case highlite.StatusDecline, highlite.StatusEOL:
+		p.Enabled = false
 	}
 
-	return product
+	return p
 }

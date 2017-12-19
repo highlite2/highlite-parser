@@ -1,23 +1,18 @@
 package transfer
 
-// Product is a representation of a product in Sylius.
-type Product struct {
-	ID           int                    `json:"id,omitempty"`
+// ProductEntire is a representation of a product in Sylius.
+type ProductEntire struct {
 	Code         string                 `json:"code,omitempty"`
-	Name         string                 `json:"name,omitempty"`
 	Translations map[string]Translation `json:"translations,omitempty"`
 	Images       []Image                `json:"images,omitempty"`
+	Enabled      bool                   `json:"enabled"`
 }
 
-// ProductNew is a structure to be used in new product request.
-type ProductNew struct {
-	ID            int                    `json:"id,omitempty"`
-	Code          string                 `json:"code,omitempty"`
-	Name          string                 `json:"name,omitempty"`
-	Translations  map[string]Translation `json:"translations,omitempty"`
-	Images        []Image                `json:"images,omitempty"`
-	MainTaxon     string                 `json:"mainTaxon,omitempty"`
-	ProductTaxons string                 `json:"productTaxons,omitempty"` // String in which the codes of taxons was written down (separated by comma)
-	Channels      []string               `json:"channels,omitempty"`
-	Enabled       bool                   `json:"enabled"`
+// Product is a structure to be used in product create/update requesta.
+type Product struct {
+	ProductEntire
+
+	MainTaxon     string   `json:"mainTaxon,omitempty"`
+	ProductTaxons string   `json:"productTaxons,omitempty"` // String in which the codes of taxons was written down (separated by comma)
+	Channels      []string `json:"channels,omitempty"`
 }

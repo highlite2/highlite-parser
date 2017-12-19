@@ -19,8 +19,9 @@ const (
 	tokenRefreshInterval   time.Duration = 30 * time.Minute
 	requestTimeout         time.Duration = 5 * time.Second
 
-	methodGet  string = "get"
-	methodPost string = "post"
+	methodGet   string = "get"
+	methodPost  string = "post"
+	methodPatch string = "patch"
 )
 
 // ErrNotFound tells that http request returned 404 Status
@@ -30,8 +31,9 @@ var ErrNotFound = errors.New("not found")
 type IClient interface {
 	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
 	CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error)
-	GetProduct(ctx context.Context, code string) (*transfer.Product, error)
-	CreateProduct(ctx context.Context, body transfer.ProductNew) (*transfer.Product, error)
+	GetProduct(ctx context.Context, code string) (*transfer.ProductEntire, error)
+	CreateProduct(ctx context.Context, body transfer.Product) (*transfer.ProductEntire, error)
+	UpdateProduct(ctx context.Context, body transfer.Product) error
 
 	CreateProductVariant(ctx context.Context, product string, body transfer.ProductVariantNew) (*transfer.ProductVariant, error)
 }
@@ -234,6 +236,11 @@ func (c *Client) requestPost(ctx context.Context, url string, result interface{}
 	return c.request(ctx, methodPost, url, result, body)
 }
 
+// Performs PATCH request
+func (c *Client) requestPatch(ctx context.Context, url string, body interface{}) error {
+	return c.request(ctx, methodPatch, url, nil, body)
+}
+
 // Performs a request. Sets authorization token and handles errors.
 // Creates context with timeout.
 // TODO this method seems to be long, should consider to split it.
@@ -250,7 +257,10 @@ func (c *Client) request(ctx context.Context, method string, url string, result 
 		return err
 	}
 
-	request := resty.R().SetContext(ctx).SetHeader("Authorization", "Bearer "+token).SetResult(result)
+	request := resty.R().SetContext(ctx).SetHeader("Authorization", "Bearer "+token)
+	if result != nil {
+		request.SetResult(result)
+	}
 	if body != nil {
 		request.SetBody(body)
 	}
@@ -264,6 +274,8 @@ func (c *Client) request(ctx context.Context, method string, url string, result 
 		res, err = request.Get(url)
 	case methodPost:
 		res, err = request.Post(url)
+	case methodPatch:
+		res, err = request.Patch(url)
 	default:
 		err = fmt.Errorf("unknown method")
 	}
@@ -275,7 +287,7 @@ func (c *Client) request(ctx context.Context, method string, url string, result 
 	}
 
 	switch res.StatusCode() {
-	case http.StatusOK, http.StatusCreated:
+	case http.StatusOK, http.StatusCreated, http.StatusNoContent:
 		return nil
 	case http.StatusNotFound:
 		return ErrNotFound

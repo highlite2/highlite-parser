@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	logger := log.GetDefaultLog()
@@ -49,7 +49,7 @@ func main() {
 	logger.Info("Start csv file processing")
 
 	i := 0
-	for run := true; run && i < 1; i++ {
+	for run := true; run && i < 3; i++ {
 		select {
 
 		case <-ctx.Done():
