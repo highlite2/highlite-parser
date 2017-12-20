@@ -7,9 +7,9 @@ import (
 )
 
 // GetTaxon gets a category by code.
-func (c *Client) GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error) {
+func (c *Client) GetTaxon(ctx context.Context, taxon string) (*transfer.Taxon, error) {
 	result := &transfer.Taxon{}
-	err := c.requestGet(ctx, c.getURL("/v1/taxons/%s", code), result)
+	err := c.requestGet(ctx, c.getURL("/v1/taxons/%s", taxon), result)
 	if err != nil {
 		return nil, err
 	}
@@ -17,10 +17,10 @@ func (c *Client) GetTaxon(ctx context.Context, code string) (*transfer.Taxon, er
 	return result, nil
 }
 
-// CreateTaxon creates a taxon
-func (c *Client) CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error) {
+// CreateTaxon creates a taxon.
+func (c *Client) CreateTaxon(ctx context.Context, taxon transfer.TaxonNew) (*transfer.Taxon, error) {
 	result := &transfer.Taxon{}
-	err := c.requestPost(ctx, c.getURL("/v1/taxons/"), result, body)
+	err := c.requestPost(ctx, c.getURL("/v1/taxons/"), result, taxon)
 	if err != nil {
 		return nil, err
 	}
@@ -28,10 +28,10 @@ func (c *Client) CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*tran
 	return result, nil
 }
 
-// GetProduct gets a product by code
-func (c *Client) GetProduct(ctx context.Context, code string) (*transfer.ProductEntire, error) {
+// GetProduct gets a product by code.
+func (c *Client) GetProduct(ctx context.Context, product string) (*transfer.ProductEntire, error) {
 	result := &transfer.ProductEntire{}
-	err := c.requestGet(ctx, c.getURL("/v1/products/%s", code), result)
+	err := c.requestGet(ctx, c.getURL("/v1/products/%s", product), result)
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +40,9 @@ func (c *Client) GetProduct(ctx context.Context, code string) (*transfer.Product
 }
 
 // CreateProduct creates a product.
-func (c *Client) CreateProduct(ctx context.Context, body transfer.Product) (*transfer.ProductEntire, error) {
+func (c *Client) CreateProduct(ctx context.Context, product transfer.Product) (*transfer.ProductEntire, error) {
 	result := &transfer.ProductEntire{}
-	err := c.requestPost(ctx, c.getURL("/v1/products/"), result, body)
+	err := c.requestPost(ctx, c.getURL("/v1/products/"), result, product)
 	if err != nil {
 		return nil, err
 	}
@@ -51,22 +51,35 @@ func (c *Client) CreateProduct(ctx context.Context, body transfer.Product) (*tra
 }
 
 // UpdateProduct updates product.
-func (c *Client) UpdateProduct(ctx context.Context, body transfer.Product) error {
-	err := c.requestPatch(ctx, c.getURL("/v1/products/%s", body.Code), body)
-	if err != nil {
-		return err
+func (c *Client) UpdateProduct(ctx context.Context, product transfer.Product) error {
+	return c.requestPatch(ctx, c.getURL("/v1/products/%s", product.Code), product)
+}
+
+// GetProductVariant gets a variant by product code and variant code.
+func (c *Client) GetProductVariant(ctx context.Context, product string, variant string) (*transfer.VariantEntire, error) {
+	result := &transfer.VariantEntire{}
+	url := c.getURL("/v1/products/%s/variants/%s", product, variant)
+	if err := c.requestGet(ctx, url, result); err != nil {
+		return result, err
 	}
 
-	return nil
+	return result, nil
 }
 
 // CreateProductVariant creates a product.
-func (c *Client) CreateProductVariant(ctx context.Context, product string, body transfer.ProductVariantNew) (*transfer.ProductVariant, error) {
-	result := &transfer.ProductVariant{}
-	err := c.requestPost(ctx, c.getURL("/v1/products/%s/variants/", product), result, body)
+func (c *Client) CreateProductVariant(ctx context.Context, product string, variant transfer.Variant) (*transfer.VariantEntire, error) {
+	result := &transfer.VariantEntire{}
+	err := c.requestPost(ctx, c.getURL("/v1/products/%s/variants/", product), result, variant)
 	if err != nil {
 		return nil, err
 	}
 
 	return result, nil
+}
+
+// UpdateProductVariant creates a product.
+func (c *Client) UpdateProductVariant(ctx context.Context, product string, variant transfer.Variant) error {
+	url := c.getURL("/v1/products/%s/variants/%s", product, variant.Code)
+
+	return c.requestPatch(ctx, url, variant)
 }

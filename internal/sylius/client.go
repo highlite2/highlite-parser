@@ -28,12 +28,16 @@ var ErrNotFound = errors.New("not found")
 
 // IClient is a Sylius Client interface
 type IClient interface {
-	GetTaxon(ctx context.Context, code string) (*transfer.Taxon, error)
-	CreateTaxon(ctx context.Context, body transfer.TaxonNew) (*transfer.Taxon, error)
-	GetProduct(ctx context.Context, code string) (*transfer.ProductEntire, error)
-	CreateProduct(ctx context.Context, body transfer.Product) (*transfer.ProductEntire, error)
-	UpdateProduct(ctx context.Context, body transfer.Product) error
-	CreateProductVariant(ctx context.Context, product string, body transfer.ProductVariantNew) (*transfer.ProductVariant, error)
+	GetTaxon(ctx context.Context, taxon string) (*transfer.Taxon, error)
+	CreateTaxon(ctx context.Context, taxon transfer.TaxonNew) (*transfer.Taxon, error)
+
+	GetProduct(ctx context.Context, product string) (*transfer.ProductEntire, error)
+	CreateProduct(ctx context.Context, product transfer.Product) (*transfer.ProductEntire, error)
+	UpdateProduct(ctx context.Context, product transfer.Product) error
+
+	GetProductVariant(ctx context.Context, product string, variant string) (*transfer.VariantEntire, error)
+	CreateProductVariant(ctx context.Context, product string, variant transfer.Variant) (*transfer.VariantEntire, error)
+	UpdateProductVariant(ctx context.Context, product string, variant transfer.Variant) error
 }
 
 // NewClient is a Sylius Client constructor.
