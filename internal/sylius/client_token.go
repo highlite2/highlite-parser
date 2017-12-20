@@ -21,7 +21,7 @@ func (c *Client) getToken() (string, error) {
 	return token.AccessToken, nil
 }
 
-// Gets tokenChan by Username and Password.
+// Gets token by Username and Password.
 func (c *Client) getTokenByPassword(ctx context.Context) (*transfer.Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
@@ -53,7 +53,7 @@ func (c *Client) getTokenByPassword(ctx context.Context) (*transfer.Token, error
 	return result, nil
 }
 
-// Gets tokenChan by refresh tokenChan.
+// Gets token by refresh token.
 func (c *Client) getTokenByRefreshToken(ctx context.Context, refreshToken string) (*transfer.Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
@@ -85,7 +85,7 @@ func (c *Client) getTokenByRefreshToken(ctx context.Context, refreshToken string
 }
 
 // Token delivery server. Gets tokens from Sylius OAuth server and writes them to a channel.
-// Makes a token background update.
+// Updates token in background.
 func (c *Client) tokenServer() {
 	var token *transfer.Token
 
