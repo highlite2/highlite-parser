@@ -1,6 +1,10 @@
 package highlite
 
-import "highlite-parser/internal/csv"
+import (
+	"strings"
+
+	"highlite-parser/internal/csv"
+)
 
 const (
 	// StatusCurrent ...
@@ -82,6 +86,16 @@ type Product struct {
 	Category3 *Category
 }
 
+// ProductDescription combines description and specs and removes html entities.
+func (p Product) ProductDescription() string {
+	description := ""
+	description += replaceHTMLEntities(p.Description)
+	description += "\n\n"
+	description += replaceHTMLEntities(p.Specs)
+
+	return description
+}
+
 // GetProductFromCSVImport creates product object from csv import data.
 func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	cat1 := NewCategory(mapper.GetString(titleCategory, values), nil)
@@ -112,6 +126,12 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	}
 
 	product.SetCodeAndURL(product.Name + " " + product.No)
+	product.Code = "highlite-" + product.No
 
 	return product
+}
+
+// Removes specific for highlite html tags.
+func replaceHTMLEntities(str string) string {
+	return strings.Replace(str, "<br />", "\n", -1)
 }

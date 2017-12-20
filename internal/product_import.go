@@ -121,14 +121,16 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 	product.Channels = []string{channel}
 	product.Translations = map[string]transfer.Translation{
 		transfer.LocaleEn: {
-			Name:        high.Name,
-			Slug:        high.URL,
-			Description: high.Description,
+			Name:             high.Name,
+			Slug:             high.URL,
+			Description:      high.ProductDescription(),
+			ShortDescription: high.SubHeading,
 		},
 		transfer.LocaleRu: { // TODO "temporary" don't overwrite Russian description - it should be taken from Russian translations
-			Name:        high.Name,
-			Slug:        high.URL,
-			Description: high.Description,
+			Name:             high.Name,
+			Slug:             high.URL,
+			Description:      high.ProductDescription(),
+			ShortDescription: high.SubHeading,
 		},
 	}
 	product.Enabled = true
