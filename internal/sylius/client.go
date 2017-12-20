@@ -4,11 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
-
-	"github.com/go-resty/resty"
 
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius/transfer"
@@ -24,6 +21,8 @@ const (
 	methodPatch string = "patch"
 )
 
+var _ IClient = (*Client)(nil)
+
 // ErrNotFound tells that http request returned 404 Status
 var ErrNotFound = errors.New("not found")
 
@@ -34,11 +33,8 @@ type IClient interface {
 	GetProduct(ctx context.Context, code string) (*transfer.ProductEntire, error)
 	CreateProduct(ctx context.Context, body transfer.Product) (*transfer.ProductEntire, error)
 	UpdateProduct(ctx context.Context, body transfer.Product) error
-
 	CreateProductVariant(ctx context.Context, product string, body transfer.ProductVariantNew) (*transfer.ProductVariant, error)
 }
-
-var _ IClient = (*Client)(nil)
 
 // NewClient is a Sylius Client constructor.
 func NewClient(logger log.ILogger, endpoint string, auth Auth) *Client {
@@ -52,6 +48,7 @@ func NewClient(logger log.ILogger, endpoint string, auth Auth) *Client {
 
 	go c.tokenServer()
 
+	// wait until the token is received
 	c.getToken()
 
 	return c
@@ -79,144 +76,6 @@ func (c *Client) SetRequestTimeout(t time.Duration) {
 	c.requestTimeout = t
 }
 
-// Gets tokenChan by Username and Password.
-func (c *Client) getTokenByPassword(ctx context.Context) (*transfer.Token, error) {
-	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
-	defer cancel()
-
-	url := c.getURL("/oauth/v2/token")
-
-	result := &transfer.Token{}
-	resp, err := resty.R().
-		SetContext(ctx).
-		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetFormData(map[string]string{
-			"client_id":     c.auth.ClientID,
-			"client_secret": c.auth.ClientSecret,
-			"grant_type":    "password",
-			"username":      c.auth.Username,
-			"password":      c.auth.Password,
-		}).
-		SetResult(result).
-		Post(url)
-
-	if err != nil {
-		return nil, fmt.Errorf("request to %s failed: %s", url, err.Error())
-	}
-
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("request to %s ended with status %s", url, resp.Status())
-	}
-
-	return result, nil
-}
-
-// Gets tokenChan by refresh tokenChan.
-func (c *Client) getTokenByRefreshToken(ctx context.Context, refreshToken string) (*transfer.Token, error) {
-	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
-	defer cancel()
-
-	url := c.getURL("/oauth/v2/token")
-
-	result := &transfer.Token{}
-	resp, err := resty.R().
-		SetContext(ctx).
-		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetFormData(map[string]string{
-			"client_id":     c.auth.ClientID,
-			"client_secret": c.auth.ClientSecret,
-			"grant_type":    "refresh_token",
-			"refresh_token": refreshToken,
-		}).
-		SetResult(result).
-		Post(url)
-
-	if err != nil {
-		return nil, fmt.Errorf("request to %s failed: %s", url, err.Error())
-	}
-
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("request to %s ended with status %s", url, resp.Status())
-	}
-
-	return result, nil
-}
-
-// Token delivery server. Gets tokens from Sylius OAuth server and writes them to a channel.
-// Makes a token background update.
-func (c *Client) tokenServer() {
-	var token *transfer.Token
-
-	refreshToken := make(<-chan time.Time)
-	obtainToken := make(chan bool, 1)
-	obtainToken <- true
-
-	c.logger.Debug("Starting token delivery server")
-	for keepRunning := true; keepRunning; {
-		var tokenRequestChan chan *transfer.Token
-		if token != nil {
-			tokenRequestChan = c.tokenChan
-		}
-
-		select {
-		case tokenRequestChan <- token:
-
-		case <-obtainToken:
-			c.logger.Debug("Trying to obtain token by password")
-			newToken, err := c.obtainTokenByPasswordAndUsername()
-			if err != nil {
-				c.logger.Errorf("Can't get token: %s", err.Error())
-				keepRunning = false
-			} else {
-				c.logger.Debug("Successfully received token")
-				token = newToken
-				refreshToken = time.After(tokenRefreshInterval)
-			}
-
-		case <-refreshToken:
-			newToken, err := c.getTokenByRefreshToken(context.Background(), token.RefreshToken)
-			if err != nil {
-				c.logger.Errorf("Can't refresh token using refresh token: %s", err.Error())
-				obtainToken <- true
-				token = nil
-			} else {
-				c.logger.Debug("Successfully updated token")
-				token = newToken
-				refreshToken = time.After(tokenRefreshInterval)
-			}
-
-		}
-	}
-
-	c.logger.Debug("Stopping token delivery server")
-}
-
-// Tries to get tokenChan by Username and Password.
-// Retries for a const amount of times if api request fails.
-func (c *Client) obtainTokenByPasswordAndUsername() (*transfer.Token, error) {
-	for i := 0; i < tokenRequestRetryCount; i++ {
-		token, err := c.getTokenByPassword(context.Background())
-		if err != nil {
-			c.logger.Warnf("Failed to obtain password for the %d time: %s", i+1, err.Error())
-			time.Sleep(time.Second)
-		} else {
-			return token, nil
-		}
-	}
-
-	return nil, fmt.Errorf("can't obtain token by password and username after %d retries", tokenRequestRetryCount)
-}
-
-// Gets a token.
-func (c *Client) getToken() (string, error) {
-	token, ok := <-c.tokenChan
-	if !ok {
-		return "", fmt.Errorf("can't get token: token chan was closed")
-	}
-
-	return token.AccessToken, nil
-}
-
 // Returns full url using endpoint and resource paths.
 func (c *Client) getURL(path string, args ...interface{}) string {
 	if len(args) > 0 {
@@ -224,76 +83,4 @@ func (c *Client) getURL(path string, args ...interface{}) string {
 	}
 
 	return strings.TrimSuffix(c.endpoint, "/") + "/" + strings.TrimPrefix(path, "/")
-}
-
-// Performs GET request
-func (c *Client) requestGet(ctx context.Context, url string, result interface{}) error {
-	return c.request(ctx, methodGet, url, result, nil)
-}
-
-// Performs POST request
-func (c *Client) requestPost(ctx context.Context, url string, result interface{}, body interface{}) error {
-	return c.request(ctx, methodPost, url, result, body)
-}
-
-// Performs PATCH request
-func (c *Client) requestPatch(ctx context.Context, url string, body interface{}) error {
-	return c.request(ctx, methodPatch, url, nil, body)
-}
-
-// Performs a request. Sets authorization token and handles errors.
-// Creates context with timeout.
-// TODO this method seems to be long, should consider to split it.
-func (c *Client) request(ctx context.Context, method string, url string, result interface{}, body interface{}) error {
-	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
-	defer cancel()
-
-	var err error
-
-	token, err := c.getToken()
-	if err != nil {
-		c.logger.Errorf("Failed to get token during [%s] %s request", method, url)
-
-		return err
-	}
-
-	request := resty.R().SetContext(ctx).SetHeader("Authorization", "Bearer "+token)
-	if result != nil {
-		request.SetResult(result)
-	}
-	if body != nil {
-		request.SetBody(body)
-	}
-
-	var res *resty.Response
-
-	c.logger.Debugf("Performing [%s] request to %s", method, url)
-
-	switch method {
-	case methodGet:
-		res, err = request.Get(url)
-	case methodPost:
-		res, err = request.Post(url)
-	case methodPatch:
-		res, err = request.Patch(url)
-	default:
-		err = fmt.Errorf("unknown method")
-	}
-
-	if err != nil {
-		c.logger.Errorf(err.Error())
-
-		return fmt.Errorf(err.Error())
-	}
-
-	switch res.StatusCode() {
-	case http.StatusOK, http.StatusCreated, http.StatusNoContent:
-		return nil
-	case http.StatusNotFound:
-		return ErrNotFound
-	}
-
-	c.logger.Errorf("[%s] %s %s %s", method, url, res.Status(), string(res.Body()))
-
-	return fmt.Errorf("%s", res.Status())
 }
