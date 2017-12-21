@@ -9,8 +9,6 @@ const (
 
 // Translation is a representation of translation in Sylius
 type Translation struct {
-	ID               int    `json:"id,omitempty"`
-	Locale           string `json:"locale,omitempty"`
 	Name             string `json:"name,omitempty"`
 	Slug             string `json:"slug,omitempty"`
 	Description      string `json:"description,omitempty"`
