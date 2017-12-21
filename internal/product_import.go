@@ -55,6 +55,12 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 		return err
 	}
 
+	// TODO begin
+	if err := i.imageImport.Import(product, high); err != nil {
+		return err
+	}
+	// TODO end
+
 	return nil
 }
 
@@ -63,6 +69,12 @@ func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.Pro
 	if err := i.client.UpdateProduct(ctx, i.getProductFromHighlite(*product, high)); err != nil {
 		return err
 	}
+
+	// TODO begin
+	if err := i.imageImport.Import(i.getProductFromHighlite(*product, high), high); err != nil {
+		return err
+	}
+	// TODO end
 
 	variantCode := getProductMainVariantCode(product.Code)
 	if variantEntire, err := i.client.GetProductVariant(ctx, product.Code, variantCode); err != nil {

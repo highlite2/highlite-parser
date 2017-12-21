@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"highlite-parser/internal/sylius/transfer"
+	"time"
 )
 
 // GetTaxon gets a category by code.
@@ -53,6 +54,32 @@ func (c *Client) CreateProduct(ctx context.Context, product transfer.Product) (*
 // UpdateProduct updates product.
 func (c *Client) UpdateProduct(ctx context.Context, product transfer.Product) error {
 	return c.requestPatch(ctx, c.getURL("/v1/products/%s", product.Code), product)
+}
+
+// TestImageUpload TODO
+func (c *Client) TestImageUpload(ctx context.Context, product transfer.Product) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second * 30)
+	defer cancel()
+
+	request, err := c.getRequestWithToken(ctx)
+	if err != nil {
+		return err
+	}
+
+	request.SetFile("image[0][file]", "_tmp/test.jpg")
+
+
+
+
+
+	request.SetBody(product)
+
+	response, err := c.executeRequestWithMethod(request, methodPut, c.getURL("/v1/products/%s", product.Code))
+	if err != nil {
+		return err
+	}
+
+	return c.checkResponseStatus(response)
 }
 
 // GetProductVariant gets a variant by product code and variant code.

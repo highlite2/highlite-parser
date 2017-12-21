@@ -44,6 +44,8 @@ func (c *Client) executeRequestWithMethod(request *resty.Request, method string,
 		return request.Post(url)
 	case methodPatch:
 		return request.Patch(url)
+	case methodPut:
+		return request.Put(url)
 	}
 
 	return nil, fmt.Errorf("unknown method")

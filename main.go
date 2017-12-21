@@ -23,7 +23,7 @@ func main() {
 
 	logger := log.GetDefaultLog()
 
-	resty.DefaultClient.Debug = false
+	resty.DefaultClient.Debug = true
 	client := sylius.NewClient(logger, "http://localhost:1221/app_dev.php/api", sylius.Auth{
 		ClientID:     "demo_client",
 		ClientSecret: "secret_demo_client",
@@ -49,7 +49,7 @@ func main() {
 	logger.Info("Start csv file processing")
 
 	i := 0
-	for run := true; run && i < 3; i++ {
+	for run := true; run && i < 1; i++ {
 		select {
 
 		case <-ctx.Done():
