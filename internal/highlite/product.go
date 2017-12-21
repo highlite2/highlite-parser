@@ -84,6 +84,8 @@ type Product struct {
 	Category1 *Category
 	Category2 *Category
 	Category3 *Category
+
+	Images []string
 }
 
 // ProductDescription combines description and specs and removes html entities.
@@ -127,6 +129,9 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 
 	product.SetCodeAndURL(product.Name + " " + product.No)
 	product.Code = "highlite-" + product.No
+
+	imagesString := mapper.GetString(titleImagesList, values)
+	product.Images = strings.Fields(strings.Replace(imagesString, "|", " ", -1))
 
 	return product
 }
