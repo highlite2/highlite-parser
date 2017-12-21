@@ -16,6 +16,7 @@ func NewProductImport(client sylius.IClient, memo cache.IMemo, logger log.ILogge
 	return &ProductImport{
 		client:         client,
 		categoryImport: NewCategoryImport(client, memo, logger),
+		imageImport:    NewImageImport(client, logger),
 	}
 }
 
@@ -23,6 +24,7 @@ func NewProductImport(client sylius.IClient, memo cache.IMemo, logger log.ILogge
 type ProductImport struct {
 	client         sylius.IClient
 	categoryImport *CategoryImport
+	imageImport    *ImageImport
 }
 
 // Import imports highlite product into sylius.
