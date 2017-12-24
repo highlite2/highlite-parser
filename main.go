@@ -23,7 +23,7 @@ func main() {
 
 	logger := log.GetDefaultLog()
 
-	resty.DefaultClient.Debug = true
+	resty.DefaultClient.Debug = false
 	client := sylius.NewClient(logger, "http://localhost:1221/app_dev.php/api", sylius.Auth{
 		ClientID:     "demo_client",
 		ClientSecret: "secret_demo_client",

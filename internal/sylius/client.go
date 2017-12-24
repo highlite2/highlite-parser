@@ -39,8 +39,6 @@ type IClient interface {
 	GetProductVariant(ctx context.Context, product string, variant string) (*transfer.VariantEntire, error)
 	CreateProductVariant(ctx context.Context, product string, variant transfer.Variant) (*transfer.VariantEntire, error)
 	UpdateProductVariant(ctx context.Context, product string, variant transfer.Variant) error
-
-	TestImageUpload(ctx context.Context, product transfer.Product) error
 }
 
 // NewClient is a Sylius Client constructor.

@@ -1,11 +1,12 @@
 package internal
 
 import (
+	"context"
+
 	"highlite-parser/internal/highlite"
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius"
 	"highlite-parser/internal/sylius/transfer"
-	"context"
 )
 
 // NewImageImport creates new ImageImport.
@@ -23,16 +24,6 @@ type ImageImport struct {
 }
 
 // Import TODO
-func (i *ImageImport) Import(product transfer.Product, h highlite.Product) error {
-	product.Images = []transfer.Image{
-		{
-			Type: "test_upload",
-		},
-	}
-
-	if err := i.client.TestImageUpload(context.Background(), product); err != nil {
-		return err
-	}
-
+func (i *ImageImport) Import(ctx context.Context, product transfer.Product, h highlite.Product) error {
 	return nil
 }

@@ -56,7 +56,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 	}
 
 	// TODO begin
-	if err := i.imageImport.Import(product, high); err != nil {
+	if err := i.imageImport.Import(ctx, product, high); err != nil {
 		return err
 	}
 	// TODO end
@@ -71,7 +71,7 @@ func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.Pro
 	}
 
 	// TODO begin
-	if err := i.imageImport.Import(i.getProductFromHighlite(*product, high), high); err != nil {
+	if err := i.imageImport.Import(ctx, i.getProductFromHighlite(*product, high), high); err != nil {
 		return err
 	}
 	// TODO end
