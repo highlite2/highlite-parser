@@ -1,0 +1,12 @@
+[highlite]
+	login = ""
+	password = ""
+	login_endpoint = ""
+	itemsendpoint = ""
+
+[sylius]
+	client_id = "demo_client"
+	client_secret = "secret_demo_client"
+	username = "api@example.com"
+	password = "sylius-api"
+	api_endpoint = "http://localhost:1221/app_dev.php/api"

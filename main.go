@@ -21,14 +21,16 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	cfg := internal.GetConfigFromFile("config/config.toml")
+
 	logger := log.GetDefaultLog()
 
 	resty.DefaultClient.Debug = false
-	client := sylius.NewClient(logger, "http://localhost:1221/app_dev.php/api", sylius.Auth{
-		ClientID:     "demo_client",
-		ClientSecret: "secret_demo_client",
-		Username:     "api@example.com",
-		Password:     "sylius-api",
+	client := sylius.NewClient(logger, cfg.Sylius.APIEndpoint, sylius.Auth{
+		ClientID:     cfg.Sylius.ClientID,
+		ClientSecret: cfg.Sylius.ClientSecret,
+		Username:     cfg.Sylius.Username,
+		Password:     cfg.Sylius.Password,
 	})
 
 	memo := cache.NewMemo()
