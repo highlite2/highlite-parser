@@ -18,7 +18,7 @@ func GetConfigFromFile(path string) Config {
 
 // Config is an application global config.
 type Config struct {
-	Highlight struct {
+	Highlite struct {
 		Login         string
 		Password      string
 		LoginEndpoint string
