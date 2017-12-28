@@ -1,4 +1,4 @@
-package internal
+package imprt
 
 import (
 	"context"
@@ -8,24 +8,24 @@ import (
 	"highlite-parser/internal/log"
 )
 
-// NewImportProcessor creates an ImportProcessor instance.
-func NewImportProcessor(logger log.ILogger, productImport *ProductImport, client *highlite.Client) *ImportProcessor {
-	return &ImportProcessor{
+// NewProcessor creates an Processor instance.
+func NewProcessor(logger log.ILogger, productImport *ProductImport, client *highlite.Client) *Processor {
+	return &Processor{
 		logger:        logger,
 		productImport: productImport,
 		highClient:    client,
 	}
 }
 
-// ImportProcessor handles highlite product update.
-type ImportProcessor struct {
+// Processor handles highlite product update.
+type Processor struct {
 	logger        log.ILogger
 	productImport *ProductImport
 	highClient    *highlite.Client
 }
 
 // Update starts the update process.
-func (p *ImportProcessor) Update(ctx context.Context) {
+func (p *Processor) Update(ctx context.Context) {
 	p.logger.Debug("Getting items from highlite server")
 
 	items, err := p.highClient.GetItemsReader(ctx)

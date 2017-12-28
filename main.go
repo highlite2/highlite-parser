@@ -7,6 +7,7 @@ import (
 	"highlite-parser/internal"
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
+	"highlite-parser/internal/imprt"
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius"
 )
@@ -32,11 +33,11 @@ func main() {
 	})
 
 	memo := cache.NewMemo()
-	productImport := internal.NewProductImport(client, memo, logger)
+	productImport := imprt.NewProductImport(client, memo, logger)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	processor := internal.NewImportProcessor(logger, productImport, highClient)
+	processor := imprt.NewProcessor(logger, productImport, highClient)
 	processor.Update(ctx)
 }
