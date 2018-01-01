@@ -23,7 +23,7 @@ type Worker struct {
 	once sync.Once
 }
 
-// Stop sends a signal to stopWorkersGracefully the worker.
+// Stop sends a signal to stop the worker.
 func (w *Worker) Stop() <-chan bool {
 	w.once.Do(func() {
 		go func() {
@@ -34,6 +34,7 @@ func (w *Worker) Stop() <-chan bool {
 	return w.quit
 }
 
+// Executes jobs.
 func (w *Worker) start() {
 	for {
 		select {
