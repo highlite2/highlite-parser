@@ -28,28 +28,37 @@ type Pool struct {
 	stopped  chan bool
 }
 
-// AddJob adds a new job into worker queue.
-func (p *Pool) AddJob(job IJob) {
+// AddJob adds a new job into the worker queue.
+// Function returns a channel and will send:
+// - false if the pool is already closed;
+// - true when the job is successfully added.
+func (p *Pool) AddJob(job IJob) <-chan bool {
+	added := make(chan bool, 1)
+
 	go func() {
 		select {
 		case p.jobs <- job:
+			added <- true
 		case <-p.stopped:
+			added <- false
 		}
 	}()
+
+	return added
 }
 
 // Stop gracefully stops all workers. It doesn't block.
-// Returns a channel to notify when all workers have been stopped.
+// Returns a channel to notify when all workers are stopped.
 func (p *Pool) Stop() <-chan bool {
 	p.stopOnce.Do(func() {
-		go p.stopWorkersGracefully()
+		go p.stopPoolGracefully()
 	})
 
 	return p.stopped
 }
 
 // Stops all workers, waits until every worker has finished its work.
-func (p *Pool) stopWorkersGracefully() {
+func (p *Pool) stopPoolGracefully() {
 	stops := make(chan bool)
 	for _, w := range p.workers {
 		go func(worker *Worker) {
