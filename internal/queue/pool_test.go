@@ -1,12 +1,12 @@
 package queue
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"sync/atomic"
 )
 
 func TestPool_AllJobsAreExecuted(t *testing.T) {
