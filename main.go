@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"io"
+	"os"
 	"time"
 
 	"highlite-parser/internal"
@@ -11,9 +13,15 @@ import (
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/queue"
 	"highlite-parser/internal/sylius"
+
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
 )
 
 func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
 	config := internal.GetConfigFromFile("config/config.toml")
 
 	logger := log.GetDefaultLog(config.LogLevel)
@@ -26,23 +34,41 @@ func main() {
 		config.Highlite.ItemsEndpoint,
 	)
 
-	client := sylius.NewClient(logger, config.Sylius.APIEndpoint, sylius.Auth{
+	syliusClient := sylius.NewClient(logger, config.Sylius.APIEndpoint, sylius.Auth{
 		ClientID:     config.Sylius.ClientID,
 		ClientSecret: config.Sylius.ClientSecret,
 		Username:     config.Sylius.Username,
 		Password:     config.Sylius.Password,
 	})
 
-	pool := queue.NewPool(10)
-
 	memo := cache.NewMemo()
-	productImport := imprt.NewProductImport(client, memo, logger)
+	productImport := imprt.NewProductImport(syliusClient, memo, logger)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
+	var itemsReader io.Reader
 
-	processor := imprt.NewProcessor(logger, pool, productImport, highClient)
-	processor.Update(ctx)
+	if config.ItemsFilePath == "" {
+		if reader, err := highClient.GetItemsReader(ctx); err != nil {
+			logger.Errorf("Can't get highlite items reader: %s", err.Error())
+		} else {
+			itemsReader = reader
+		}
+	} else {
+		if file, err := os.Open(config.ItemsFilePath); err != nil {
+			logger.Errorf("Can't open file for reading items: %s", err.Error())
+		} else {
+			defer file.Close()
+			itemsReader = transform.NewReader(file, charmap.Windows1257.NewDecoder())
+		}
+	}
 
-	<-pool.Stop()
+	jobPool := queue.NewPool(10)
+
+	if itemsReader != nil {
+		processor := imprt.NewProcessor(logger, jobPool, productImport, itemsReader)
+		processor.Update(ctx)
+	} else {
+		logger.Error("Items reader is empty")
+	}
+
+	<-jobPool.Stop()
 }

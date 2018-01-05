@@ -1,3 +1,5 @@
+ItemsFilePath = "./_tmp/products_v1_0.csv"
+
 LogLevel = "debug"
 
 [highlite]

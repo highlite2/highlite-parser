@@ -2,6 +2,7 @@ package imprt
 
 import (
 	"context"
+	"io"
 
 	"highlite-parser/internal/csv"
 	"highlite-parser/internal/highlite"
@@ -10,12 +11,12 @@ import (
 )
 
 // NewProcessor creates an Processor instance.
-func NewProcessor(logger log.ILogger, pool *queue.Pool, productImport *ProductImport, client *highlite.Client) *Processor {
+func NewProcessor(logger log.ILogger, pool *queue.Pool, productImport *ProductImport, items io.Reader) *Processor {
 	return &Processor{
 		logger:        logger,
 		workerPool:    pool,
 		productImport: productImport,
-		highClient:    client,
+		items:         items,
 	}
 }
 
@@ -24,49 +25,55 @@ type Processor struct {
 	logger        log.ILogger
 	workerPool    *queue.Pool
 	productImport *ProductImport
-	highClient    *highlite.Client
+	items         io.Reader
 }
 
 // Update starts the update process.
 func (p *Processor) Update(ctx context.Context) {
-	p.logger.Debug("Getting items from highlite server")
+	p.logger.Debug("Starting update")
 
-	items, err := p.highClient.GetItemsReader(ctx)
-	if err != nil {
-		p.logger.Errorf("Can't get highlite items reader: %s", err.Error())
-		return
-	}
-
-	csvParser := csv.NewReader(items)
+	csvParser := csv.NewReader(p.items)
 	csvParser.ReadTitles()
 	csvMapper := csv.NewTitleMap(csvParser.Titles())
 
-	p.logger.Debug("CSV parsing start")
+	defer p.handleCSVParserFinish(csvParser)
 
-	for run := true; run; {
+	for {
 		select {
 		case <-ctx.Done():
-			p.logger.Info("Context timeout")
-			run = false
+			p.logger.Warn("Context timeout")
+			return
 
 		default:
 			if !csvParser.Next() {
-				run = false
-				break
+				return
 			}
 
-			pr := highlite.GetProductFromCSVImport(csvMapper, csvParser.Values())
-			p.logger.Debugf("Processing product: category %s", pr.Category3.GetURL())
-
-			if err := p.productImport.Import(ctx, pr); err != nil {
-				p.logger.Errorf("Product processing error: %s", err.Error())
-			}
+			product := highlite.GetProductFromCSVImport(csvMapper, csvParser.Values())
+			<-p.workerPool.AddJob(p.getImportJob(ctx, product))
 		}
 	}
+}
 
+// Creates import job.
+func (p *Processor) getImportJob(ctx context.Context, high highlite.Product) queue.IJob {
+	return queue.NewCallbackJob(func() error {
+		p.logger.Infof("Processing product: %s, category: %s", high.No, high.Category3.GetURL())
+
+		err := p.productImport.Import(ctx, high)
+		if err != nil {
+			p.logger.Errorf("Product processing error: %s", err.Error())
+		}
+
+		return err
+	})
+}
+
+// Handles csv parser finish.
+func (p *Processor) handleCSVParserFinish(csvParser *csv.Reader) {
 	if csvParser.Err() != nil {
 		p.logger.Errorf("Csv processing error: %s", csvParser.Err().Error())
 	}
 
-	p.logger.Debug("CSV parsing stop")
+	p.logger.Debug("Stop update")
 }

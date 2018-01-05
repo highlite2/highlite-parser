@@ -14,8 +14,15 @@ func GetDefaultLog(level string) ILogger {
 		apexLog.SetLevel(apexLog.DebugLevel)
 	case "info":
 		apexLog.SetLevel(apexLog.InfoLevel)
+	case "warn":
+		apexLog.SetLevel(apexLog.WarnLevel)
+	case "error":
+		apexLog.SetLevel(apexLog.ErrorLevel)
+	case "fatal":
+		apexLog.SetLevel(apexLog.FatalLevel)
 	default:
 		apexLog.SetLevel(apexLog.FatalLevel)
+		apexLog.Log.Warnf("Unknown log level type: %s, setting level to fatal level", level)
 	}
 
 	return apexLog.Log

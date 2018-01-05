@@ -29,7 +29,7 @@ type Pool struct {
 }
 
 // AddJob adds a new job into the worker queue.
-// Function returns a channel and will send:
+// Function returns a buffered channel and will send:
 // - false if the pool is already closed;
 // - true when the job is successfully added.
 func (p *Pool) AddJob(job IJob) <-chan bool {

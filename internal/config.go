@@ -18,6 +18,8 @@ func GetConfigFromFile(path string) Config {
 
 // Config is an application global config.
 type Config struct {
+	ItemsFilePath string
+
 	LogLevel string
 
 	Highlite struct {

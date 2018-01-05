@@ -46,7 +46,7 @@ type Client struct {
 
 // GetItemsReader returns a Reader instance with highlite items.
 func (r *Client) GetItemsReader(ctx context.Context) (io.Reader, error) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
 	cookies, err := r.getCookies(ctx)
