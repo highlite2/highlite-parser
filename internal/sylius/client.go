@@ -14,7 +14,7 @@ import (
 const (
 	tokenRequestRetryCount int           = 10
 	tokenRefreshInterval   time.Duration = 30 * time.Minute
-	requestTimeout         time.Duration = 5 * time.Second
+	requestTimeout         time.Duration = 10 * time.Second
 
 	methodGet   string = "get"
 	methodPost  string = "post"

@@ -56,6 +56,8 @@ const (
 	titleMainDescriptionEN string = "Main Description EN"
 	titleSpecsEN           string = "Specs EN"
 	titleImagesList        string = "Images List"
+	titleManual            string = "Manual"
+	titleYoutubeLink       string = "Youtube Link"
 	titleBrand             string = "Brand"
 	titleSubcategory3      string = "Subcategory 3"
 )
