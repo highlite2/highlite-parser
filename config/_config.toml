@@ -1,5 +1,7 @@
 ItemsFilePath = "./_tmp/products_v1_0.csv"
 
+TranslationsFilePath = "./_tmp/translations.csv"
+
 LogLevel = "debug"
 
 [highlite]
