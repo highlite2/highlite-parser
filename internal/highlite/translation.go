@@ -11,14 +11,14 @@ const (
 	// LangRU ...
 	LangRU = "RU"
 
-	translationTitleOrderCode   = "order_code"
-	translationTitleCatTextMain = "cat_text_main"
-	translationTitleCatTextSubH = "cat_text_sub_h"
-	translationTitleUSP         = "usp"
-	translationTitleTechSpec    = "tech_spec"
+	translationTitleOrderCode = iota
+	translationTitleCatTextMain
+	translationTitleCatTextSubH
+	translationTitleUSP
+	translationTitleTechSpec
 )
 
-var csvTranslationsTitles = map[string]map[string]string{
+var csvTranslationsTitles = map[string]map[int]string{
 	LangRU: {
 		translationTitleOrderCode:   "Ordercode",
 		translationTitleCatTextMain: "cattext_main_rus",
@@ -33,7 +33,7 @@ func checkTranslationTitlesForLanguage(lang string) error {
 		return fmt.Errorf("undefined lang")
 	}
 
-	checkList := []string{
+	checkList := []int{
 		translationTitleOrderCode,
 		translationTitleCatTextMain,
 		translationTitleCatTextSubH,
