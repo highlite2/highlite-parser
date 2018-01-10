@@ -1,38 +1,59 @@
 package highlite
 
 import (
-	"io"
 	"fmt"
 	"os"
+
 	"highlite-parser/internal/csv"
 )
 
 const (
-	// LangRU ..
+	// LangRU ...
 	LangRU = "RU"
 
-	translationOrderCode   = "order_code"
-	translationCatTextMain = "cat_text_main"
-	translationCatTextSubH = "cat_text_sub_h"
-	translationUSP         = "usp"
-	translationTechSpec    = "tech_spec"
+	translationTitleOrderCode   = "order_code"
+	translationTitleCatTextMain = "cat_text_main"
+	translationTitleCatTextSubH = "cat_text_sub_h"
+	translationTitleUSP         = "usp"
+	translationTitleTechSpec    = "tech_spec"
 )
 
-var translationTitles map[string]string = map[string]string{
+var csvTranslationsTitles = map[string]map[string]string{
 	LangRU: {
-		translationOrderCode:   "Ordercode",
-		translationCatTextMain: "cattext_main_rus",
-		translationCatTextSubH: "cattext_subh_rus",
-		translationUSP:         "USP_rus",
-		translationTechSpec:    "techspec_rus",
+		translationTitleOrderCode:   "Ordercode",
+		translationTitleCatTextMain: "cattext_main_rus",
+		translationTitleCatTextSubH: "cattext_subh_rus",
+		translationTitleUSP:         "USP_rus",
+		translationTitleTechSpec:    "techspec_rus",
 	},
+}
+
+func checkTranslationTitlesForLanguage(lang string) error {
+	if _, ok := csvTranslationsTitles[lang]; !ok {
+		return fmt.Errorf("undefined lang")
+	}
+
+	checkList := []string{
+		translationTitleOrderCode,
+		translationTitleCatTextMain,
+		translationTitleCatTextSubH,
+		translationTitleUSP,
+		translationTitleTechSpec,
+	}
+
+	for _, key := range checkList {
+		if _, ok := csvTranslationsTitles[lang][key]; !ok {
+			return fmt.Errorf("key [%s] is undefined for %s lang", key, lang)
+		}
+	}
+
+	return nil
 }
 
 // Translation ... TODO
 type Translation struct {
-	lang   string
-	reader io.Reader
-	items  map[string]TranslationItem
+	lang  string
+	items map[string]TranslationItem
 }
 
 // Get ... TODO
@@ -62,8 +83,13 @@ func (t *TranslationItem) ProductDescription() string {
 	return ""
 }
 
+// GetTranslationFromCSVFile ... TODO
 func GetTranslationFromCSVFile(lang string, filePath string) (*Translation, error) {
-	file, err := os.Open(filePath);
+	if err := checkTranslationTitlesForLanguage(lang); err != nil {
+		return nil, err
+	}
+
+	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -75,16 +101,26 @@ func GetTranslationFromCSVFile(lang string, filePath string) (*Translation, erro
 	csvMapper := csv.NewTitleMap(csvParser.Titles())
 
 	translation := &Translation{
-		lang: lang,
+		lang:  lang,
+		items: make(map[string]TranslationItem),
 	}
 
-	for ; csvParser.Next() ; {
+	titles := csvTranslationsTitles[lang]
+
+	for csvParser.Next() {
 		values := csvParser.Values()
-		item := TranslationItem{
-			CatTextMain: csvMapper.GetString(titleProductNo, values),
+
+		productNo := csvMapper.GetString(titles[translationTitleOrderCode], values)
+		if productNo == "" {
+			return nil, fmt.Errorf("one of product codes is empty")
 		}
 
-
+		translation.items[productNo] = TranslationItem{
+			CatTextMain: csvMapper.GetString(titles[translationTitleCatTextMain], values),
+			CatTextSubH: csvMapper.GetString(titles[translationTitleCatTextSubH], values),
+			USP:         csvMapper.GetString(titles[translationTitleUSP], values),
+			TechSpec:    csvMapper.GetString(titles[translationTitleTechSpec], values),
+		}
 	}
 
 	return translation, nil
