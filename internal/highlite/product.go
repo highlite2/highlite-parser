@@ -93,9 +93,9 @@ type Product struct {
 // ProductDescription combines description and specs and removes html entities.
 func (p Product) ProductDescription() string {
 	description := ""
-	description += replaceHTMLEntities(p.Description)
+	description += ReplaceHTMLEntities(p.Description)
 	description += "\n\n"
-	description += replaceHTMLEntities(p.Specs)
+	description += ReplaceHTMLEntities(p.Specs)
 
 	return description
 }
@@ -139,6 +139,6 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 }
 
 // Removes specific for highlite html tags.
-func replaceHTMLEntities(str string) string {
+func ReplaceHTMLEntities(str string) string {
 	return strings.Replace(str, "<br />", "\n", -1)
 }
