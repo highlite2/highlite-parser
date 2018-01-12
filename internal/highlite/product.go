@@ -138,7 +138,7 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	return product
 }
 
-// Removes specific for highlite html tags.
+// ReplaceHTMLEntities removes specific for highlite html tags.
 func ReplaceHTMLEntities(str string) string {
 	return strings.Replace(str, "<br />", "\n", -1)
 }

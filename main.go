@@ -13,13 +13,15 @@ import (
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/queue"
 	"highlite-parser/internal/sylius"
+	"highlite-parser/internal/highlite/translation"
+	"highlite-parser/internal/sylius/transfer"
 
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 10)
 	defer cancel()
 
 	config := internal.GetConfigFromFile("config/config.toml")
@@ -41,8 +43,16 @@ func main() {
 		Password:     config.Sylius.Password,
 	})
 
+	dictionary := translation.NewMemoryDictionary()
+	if err := translation.FillMemoryDictionaryFromCSV(dictionary, transfer.LocaleRu,
+		config.TranslationsFilePath, translation.GetRussianTranslationsCSVTitles()); err != nil {
+		logger.Errorf("Can't fill dictionary: %s", err.Error())
+
+		return
+	}
+
 	memo := cache.NewMemo()
-	productImport := imprt.NewProductImport(syliusClient, memo, logger)
+	productImport := imprt.NewProductImport(syliusClient, memo, logger, dictionary)
 
 	var itemsReader io.Reader
 

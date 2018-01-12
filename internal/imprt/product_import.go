@@ -6,17 +6,20 @@ import (
 
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
+	"highlite-parser/internal/highlite/translation"
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius"
 	"highlite-parser/internal/sylius/transfer"
 )
 
 // NewProductImport creates new ProductImport.
-func NewProductImport(client sylius.IClient, memo cache.IMemo, logger log.ILogger) *ProductImport {
+func NewProductImport(client sylius.IClient, memo cache.IMemo,
+	logger log.ILogger, dictionary translation.IDictionary) *ProductImport {
 	return &ProductImport{
 		client:         client,
 		categoryImport: NewCategoryImport(client, memo, logger),
 		imageImport:    NewImageImport(client, logger),
+		dictionary:     dictionary,
 	}
 }
 
@@ -25,6 +28,7 @@ type ProductImport struct {
 	client         sylius.IClient
 	categoryImport *CategoryImport
 	imageImport    *ImageImport
+	dictionary     translation.IDictionary
 }
 
 // Import imports highlite product into sylius.
@@ -145,7 +149,14 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 		ShortDescription: high.SubHeading,
 	}
 
-	if _, ok := product.Translations[transfer.LocaleRu]; !ok {
+	if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok {
+		product.Translations[transfer.LocaleRu] = transfer.Translation{
+			Name:             high.Name,
+			Slug:             high.URL,
+			Description:      item.GetDescription(),
+			ShortDescription: item.GetShortDescription(),
+		}
+	} else {
 		product.Translations[transfer.LocaleRu] = transfer.Translation{
 			Name:             high.Name,
 			Slug:             high.URL,
