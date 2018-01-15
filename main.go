@@ -9,11 +9,11 @@ import (
 	"highlite-parser/internal"
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
+	"highlite-parser/internal/highlite/translation"
 	"highlite-parser/internal/imprt"
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/queue"
 	"highlite-parser/internal/sylius"
-	"highlite-parser/internal/highlite/translation"
 	"highlite-parser/internal/sylius/transfer"
 
 	"golang.org/x/text/encoding/charmap"
@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	config := internal.GetConfigFromFile("config/config.toml")
