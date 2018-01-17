@@ -1,67 +1,50 @@
 package csv
 
 import (
+	"io"
 	"strings"
 	"testing"
-
-	"io"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var testCases = []struct {
-	Input  string
-	Output [][]string
+	Separator    rune
+	QuotedQuotes bool
+	Input        string
+	Output       [][]string
 }{
 	{
 		Input:  "",
 		Output: [][]string{},
 	},
 	{
-		Input: `,
-`,
-		Output: [][]string{
-			{"", ""},
-		},
+		Input:  ",",
+		Output: [][]string{{"", ""}},
 	},
 	{
-		Input: `,`,
-		Output: [][]string{
-			{"", ""},
-		},
+		Input:  ",\n",
+		Output: [][]string{{"", ""}},
 	},
 	{
-		Input: "t1,t2,t3",
-		Output: [][]string{
-			{"t1", "t2", "t3"},
-		},
+		Input:  ",\n\n",
+		Output: [][]string{{"", ""}, {""}},
 	},
 	{
-		Input: `t1,t2,t3`,
-		Output: [][]string{
-			{"t1", "t2", "t3"},
-		},
+		Input:  "\n\n\n",
+		Output: [][]string{{""}, {""}, {""}},
 	},
 	{
-		Input: `,t1,t2,t3,,,t4,
-`,
-		Output: [][]string{
-			{"", "t1", "t2", "t3", "", "", "t4", ""},
-		},
+		QuotedQuotes: true,
+		Separator:    ';',
+		Input: `field1;'field; ''2''';"field ""3"";
+""field 3""
+field 3";field4`,
+		Output: [][]string{{"field1", "field; '2'", "field \"3\";\n\"field 3\"\nfield 3", "field4"}},
 	},
 	{
-		Input: `"pa""rs"er",'parser',parser`,
-		Output: [][]string{
-			{"pa\"rs\"er", "parser", "parser"},
-		},
-	},
-	{
-		Input: `"pa
-rs
-er","pa"rser",pa"rs"er`,
-		Output: [][]string{
-			{"pa\nrs\ner", "pa\"rser", "pa\"rs\"er"},
-		},
+		Input:  `field1,'field, 世界, '2'',"field, "3""`,
+		Output: [][]string{{"field1", "field, 世界, '2'", "field, \"3\""}},
 	},
 }
 
@@ -69,26 +52,77 @@ func TestParser(t *testing.T) {
 	for _, tc := range testCases {
 		// arrange
 		parser := NewParser(strings.NewReader(tc.Input))
+		parser.QuotedQuotes = tc.QuotedQuotes
+		parser.FieldsFixed = false
+		if tc.Separator != 0 {
+			parser.Separator = tc.Separator
+		}
 
 		// act
-		var actual [][]string = make([][]string, 0)
-		var titles []string
-		var err error
-		for {
-			titles, err = parser.Next()
-			if err != nil {
-				if err == io.EOF {
-					err = nil
-				}
-				break
-			}
-
-			actual = append(actual, titles)
-		}
+		actual, err := readAll(parser)
 
 		// assert
 		assert.Nil(t, err)
 		assert.Equal(t, tc.Output, actual)
 	}
+}
 
+func TestParserColumnsFixed(t *testing.T) {
+	// arrange
+	parser := NewParser(strings.NewReader("t1,t2\nt1,t2,t3\n"))
+
+	// act
+	actual, err := readAll(parser)
+
+	// assert
+	assert.EqualError(t, err, "wrong column count, row index 2")
+	assert.Equal(t, [][]string{{"t1", "t2"}}, actual)
+}
+
+func TestParserColumnsFixedAssigned(t *testing.T) {
+	// arrange
+	parser := NewParser(strings.NewReader("t1,t2,t3\nt1,t2,t3\nt1,t2,t3,t4\nt1,t2,t3\n"))
+	parser.FieldsCount = 2
+
+	// act
+	actual, err := readAll(parser)
+
+	// assert
+	assert.EqualError(t, err, "wrong column count, row index 1")
+	assert.Equal(t, [][]string{}, actual)
+}
+
+func TestUnquotedQuote(t *testing.T) {
+	// arrange
+	parser := NewParser(strings.NewReader(`field1,field2,field3
+field1,field "2","field "3" field 3"
+field1,field2,field3
+`))
+	parser.QuotedQuotes = true
+
+	// act
+	actual, err := readAll(parser)
+
+	// assert
+	assert.EqualError(t, err, "unquoted quote on 2:25")
+	assert.Equal(t, [][]string{{"field1", "field2", "field3"}}, actual)
+}
+
+func readAll(parser *Parser) ([][]string, error) {
+	var actual [][]string = make([][]string, 0)
+	var line []string
+	var err error
+	for {
+		line, err = parser.Next()
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			break
+		}
+
+		actual = append(actual, line)
+	}
+
+	return actual, err
 }
