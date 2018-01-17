@@ -33,8 +33,7 @@ func (p *Processor) Update(ctx context.Context) {
 	p.logger.Debug("Starting update")
 
 	csvParser := csv.NewReader(p.items)
-	csvParser.ReadTitles()
-	csvMapper := csv.NewTitleMap(csvParser.Titles())
+	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
 	defer p.handleCSVParserFinish(csvParser)
 
@@ -42,10 +41,15 @@ func (p *Processor) Update(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			p.logger.Warn("Context timeout")
+
 			return
 
 		default:
 			if !csvParser.Next() {
+				if csvParser.Err() != nil {
+					p.logger.Errorf("Error processing csv with product updates: %s", csvParser.Err().Error())
+				}
+
 				return
 			}
 

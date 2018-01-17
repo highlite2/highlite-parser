@@ -1,7 +1,6 @@
 package csv
 
 import (
-	"io"
 	"strings"
 	"testing"
 
@@ -51,7 +50,7 @@ field 3";field4`,
 func TestParser(t *testing.T) {
 	for _, tc := range testCases {
 		// arrange
-		parser := NewParser(strings.NewReader(tc.Input))
+		parser := NewReader(strings.NewReader(tc.Input))
 		parser.QuotedQuotes = tc.QuotedQuotes
 		parser.FieldsFixed = false
 		if tc.Separator != 0 {
@@ -69,7 +68,7 @@ func TestParser(t *testing.T) {
 
 func TestParserColumnsFixed(t *testing.T) {
 	// arrange
-	parser := NewParser(strings.NewReader("t1,t2\nt1,t2,t3\n"))
+	parser := NewReader(strings.NewReader("t1,t2\nt1,t2,t3\n"))
 
 	// act
 	actual, err := readAll(parser)
@@ -81,7 +80,7 @@ func TestParserColumnsFixed(t *testing.T) {
 
 func TestParserColumnsFixedAssigned(t *testing.T) {
 	// arrange
-	parser := NewParser(strings.NewReader("t1,t2,t3\nt1,t2,t3\nt1,t2,t3,t4\nt1,t2,t3\n"))
+	parser := NewReader(strings.NewReader("t1,t2,t3\nt1,t2,t3\nt1,t2,t3,t4\nt1,t2,t3\n"))
 	parser.FieldsCount = 2
 
 	// act
@@ -94,7 +93,7 @@ func TestParserColumnsFixedAssigned(t *testing.T) {
 
 func TestUnquotedQuote(t *testing.T) {
 	// arrange
-	parser := NewParser(strings.NewReader(`field1,field2,field3
+	parser := NewReader(strings.NewReader(`field1,field2,field3
 field1,field "2","field "3" field 3"
 field1,field2,field3
 `))
@@ -108,21 +107,11 @@ field1,field2,field3
 	assert.Equal(t, [][]string{{"field1", "field2", "field3"}}, actual)
 }
 
-func readAll(parser *Parser) ([][]string, error) {
-	var actual [][]string = make([][]string, 0)
-	var line []string
-	var err error
-	for {
-		line, err = parser.Next()
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-			}
-			break
-		}
-
-		actual = append(actual, line)
+func readAll(parser *Reader) ([][]string, error) {
+	var actual = make([][]string, 0)
+	for parser.Next() {
+		actual = append(actual, parser.Values())
 	}
 
-	return actual, err
+	return actual, parser.Err()
 }

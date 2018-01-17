@@ -62,9 +62,7 @@ func FillMemoryDictionaryFromCSV(dic *MemoryDictionary, lang string, path string
 	defer file.Close()
 
 	csvParser := csv.NewReader(file)
-	csvParser.SetSeparator(",")
-	csvParser.ReadTitles()
-	csvMapper := csv.NewTitleMap(csvParser.Titles())
+	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
 	if _, ok := dic.languages[lang]; !ok {
 		dic.languages[lang] = make(map[string]IProduct)
@@ -86,5 +84,5 @@ func FillMemoryDictionaryFromCSV(dic *MemoryDictionary, lang string, path string
 		}
 	}
 
-	return nil
+	return csvParser.Err()
 }
