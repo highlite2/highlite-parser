@@ -50,7 +50,7 @@ const (
 	titleSubstitute        string = "Substitute"
 	titleCatalogPage       string = "Catalog Page"
 	titleInStock           string = "In Stock"
-	titleExpWeekOfArrival  string = "\"Exp. Week of Arrival\""
+	titleExpWeekOfArrival  string = "Exp. Week of Arrival"
 	titleWebshop           string = "Webshop"
 	titleSubheadingEN      string = "Subheading EN"
 	titleMainDescriptionEN string = "Main Description EN"
@@ -93,9 +93,9 @@ type Product struct {
 // ProductDescription combines description and specs and removes html entities.
 func (p Product) ProductDescription() string {
 	description := ""
-	description += ReplaceHTMLEntities(p.Description)
+	description += replaceHTMLEntities(p.Description)
 	description += "\n\n"
-	description += ReplaceHTMLEntities(p.Specs)
+	description += replaceHTMLEntities(p.Specs)
 
 	return description
 }
@@ -138,7 +138,7 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	return product
 }
 
-// ReplaceHTMLEntities removes specific for highlite html tags.
-func ReplaceHTMLEntities(str string) string {
+// Removes specific for highlite html tags.
+func replaceHTMLEntities(str string) string {
 	return strings.Replace(str, "<br />", "\n", -1)
 }

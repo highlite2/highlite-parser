@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"highlite-parser/internal/csv"
-	"highlite-parser/internal/highlite"
 )
 
 const (
@@ -38,18 +37,18 @@ type ProductCSV struct {
 // GetDescription returns a product description.
 func (t *ProductCSV) GetDescription() string {
 	description := ""
-	description += highlite.ReplaceHTMLEntities(t.USP)
+	description += t.USP
 	description += "\n"
-	description += highlite.ReplaceHTMLEntities(t.MainText)
+	description += t.MainText
 	description += "\n\n"
-	description += highlite.ReplaceHTMLEntities(t.TechSpec)
+	description += t.TechSpec
 
 	return description
 }
 
 // GetShortDescription returns short product description.
 func (t *ProductCSV) GetShortDescription() string {
-	return highlite.ReplaceHTMLEntities(t.SubHeading)
+	return t.SubHeading
 }
 
 // FillMemoryDictionaryFromCSV fills an exact MemoryDictionary with translations from a csv file.
