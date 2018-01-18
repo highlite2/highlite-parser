@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute) // TODO change ctx timeout
 	defer cancel()
 
 	config := internal.GetConfigFromFile("config/config.toml")

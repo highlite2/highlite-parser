@@ -37,7 +37,7 @@ func (p *Processor) Update(ctx context.Context) {
 
 	defer p.handleCSVParserFinish(csvParser)
 
-	for {
+	for i:= 0; i<10; i++ { // TODO temporary limit
 		select {
 		case <-ctx.Done():
 			p.logger.Warn("Context timeout")
