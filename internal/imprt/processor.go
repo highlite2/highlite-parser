@@ -33,11 +33,12 @@ func (p *Processor) Update(ctx context.Context) {
 	p.logger.Debug("Starting update")
 
 	csvParser := csv.NewReader(p.items)
+	csvParser.Separator = ';'
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
 	defer p.handleCSVParserFinish(csvParser)
 
-	for i:= 0; i<10; i++ { // TODO temporary limit
+	for i := 0; i < 10; i++ { // TODO temporary limit
 		select {
 		case <-ctx.Done():
 			p.logger.Warn("Context timeout")

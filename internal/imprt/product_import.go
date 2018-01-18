@@ -16,6 +16,8 @@ import (
 func NewProductImport(client sylius.IClient, memo cache.IMemo,
 	logger log.ILogger, dictionary translation.IDictionary) *ProductImport {
 	return &ProductImport{
+		logger:         logger,
+		channelName:    "default", // TODO take it from config
 		client:         client,
 		categoryImport: NewCategoryImport(client, memo, logger),
 		imageImport:    NewImageImport(client, logger),
@@ -25,6 +27,8 @@ func NewProductImport(client sylius.IClient, memo cache.IMemo,
 
 // ProductImport imports highlite product into sylius.
 type ProductImport struct {
+	logger         log.ILogger
+	channelName    string
 	client         sylius.IClient
 	categoryImport *CategoryImport
 	imageImport    *ImageImport
@@ -102,8 +106,6 @@ func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.Pro
 
 // Creates sylius Variant structure from higlite product structure.
 func (i *ProductImport) getVariantFromHighlite(variantEntire transfer.VariantEntire, high highlite.Product) transfer.Variant {
-	channel := "US_WEB" // TODO take it from config
-
 	variant := transfer.Variant{VariantEntire: variantEntire}
 
 	variant.Code = getProductMainVariantCode(high.Code)
@@ -116,7 +118,7 @@ func (i *ProductImport) getVariantFromHighlite(variantEntire transfer.VariantEnt
 		},
 	}
 	variant.ChannelPrices = map[string]transfer.ChannelPrice{
-		channel: {
+		i.channelName: {
 			Price: high.Price,
 		},
 	}
@@ -130,13 +132,11 @@ func (i *ProductImport) getVariantFromHighlite(variantEntire transfer.VariantEnt
 
 // Creates sylius Product structure from higlite product structure.
 func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEntire, high highlite.Product) transfer.Product {
-	channel := "US_WEB" // TODO take it from config
-
 	product := transfer.Product{ProductEntire: productEntire}
 	product.Code = high.Code
 	product.MainTaxon = high.Category3.GetCode()
 	product.ProductTaxons = strings.Join([]string{high.Category3.GetCode(), high.Category2.GetCode(), high.Category1.GetCode()}, ",")
-	product.Channels = []string{channel}
+	product.Channels = []string{i.channelName}
 
 	if len(product.Translations) == 0 {
 		product.Translations = make(map[string]transfer.Translation)
@@ -157,6 +157,7 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 			ShortDescription: item.GetShortDescription(),
 		}
 	} else {
+		i.logger.Warnf("Can't find translations for product No %s", product.Code)
 		product.Translations[transfer.LocaleRu] = transfer.Translation{
 			Name:             high.Name,
 			Slug:             high.URL,
