@@ -55,7 +55,7 @@ func main() {
 	productImport := imprt.NewProductImport(syliusClient, memo, logger, dictionary)
 
 	var itemsReader io.Reader
-
+	// TODO refactor logic of reader creating
 	if config.ItemsFilePath == "" {
 		if reader, err := highClient.GetItemsReader(ctx); err != nil {
 			logger.Errorf("Can't get highlite items reader: %s", err.Error())

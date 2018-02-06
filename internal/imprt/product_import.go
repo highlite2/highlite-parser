@@ -20,7 +20,6 @@ func NewProductImport(client sylius.IClient, memo cache.IMemo,
 		channelName:    "default", // TODO take it from config
 		client:         client,
 		categoryImport: NewCategoryImport(client, memo, logger),
-		imageImport:    NewImageImport(client, logger),
 		dictionary:     dictionary,
 	}
 }
@@ -31,7 +30,6 @@ type ProductImport struct {
 	channelName    string
 	client         sylius.IClient
 	categoryImport *CategoryImport
-	imageImport    *ImageImport
 	dictionary     translation.IDictionary
 }
 
@@ -63,12 +61,6 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 		return err
 	}
 
-	// TODO begin
-	if err := i.imageImport.Import(ctx, product, high); err != nil {
-		return err
-	}
-	// TODO end
-
 	return nil
 }
 
@@ -77,12 +69,6 @@ func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.Pro
 	if err := i.client.UpdateProduct(ctx, i.getProductFromHighlite(*product, high)); err != nil {
 		return err
 	}
-
-	// TODO begin
-	if err := i.imageImport.Import(ctx, i.getProductFromHighlite(*product, high), high); err != nil {
-		return err
-	}
-	// TODO end
 
 	variantCode := getProductMainVariantCode(product.Code)
 	if variantEntire, err := i.client.GetProductVariant(ctx, product.Code, variantCode); err != nil {
