@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-const highliteImageLocation = "http://www.highlite.nl/var/StorageHighlite/ProduktBilder/"
-
 // Image download result.
 type downloadResponse struct {
 	name   string
@@ -18,50 +16,79 @@ type downloadResponse struct {
 
 // Internal struct for downloading images.
 type httpReader struct {
-	downloadFn   func(string) (*http.Response, error)
-	downloads    chan downloadResponse
-	ready        chan bool
+	downloadFn    func(string) (*http.Response, error)
+	imageNames    []string
+	imageLocation string
+
+	loadsChan chan downloadResponse
+	readyChan chan bool
+	errorChan chan error
+
 	imageReaders map[string]io.ReadCloser
-	imageNames   []string
-	err          error
+}
+
+// Initialization.
+func (hi *httpReader) init(
+	downloadFn func(string) (*http.Response, error),
+	imageNames []string,
+	imageLocation string,
+) {
+	hi.downloadFn = downloadFn
+	hi.imageNames = imageNames
+	hi.imageLocation = imageLocation
+
+	hi.loadsChan = make(chan downloadResponse)
+	hi.readyChan = make(chan bool)
+	hi.errorChan = make(chan error, len(imageNames))
+
+	hi.imageReaders = make(map[string]io.ReadCloser)
 }
 
 // Single download job. Gets an image from the internet and writes the result to the result channel.
 func (hi *httpReader) downloadImage(name string) {
-	response, err := hi.downloadFn(highliteImageLocation + name)
+	response, err := hi.downloadFn(hi.imageLocation + name)
 	if err != nil {
-		hi.downloads <- downloadResponse{
+		hi.loadsChan <- downloadResponse{
 			name: name,
 			err:  err,
 		}
 	} else {
-		hi.downloads <- downloadResponse{
+		hi.loadsChan <- downloadResponse{
 			name:   name,
 			reader: response.Body,
 		}
 	}
 }
 
-// Handles download jobs results and notifies listeners that all downloads were completed.
+// Handles download jobs results and notifies listeners that all loadsChan were completed.
 func (hi *httpReader) downloadObserver() {
 	for range hi.imageNames {
-		download := <-hi.downloads
+		download := <-hi.loadsChan
 		if download.err != nil {
-			hi.err = download.err
+			hi.errorChan <- download.err
 		} else {
 			hi.imageReaders[download.name] = download.reader
 		}
 	}
 
-	close(hi.downloads)
-	close(hi.ready)
+	hi.readyChan <- true
 }
 
-// Closes all readers.
-func (hi *httpReader) closeReaders() {
+// Waits until all downloads are completed and then closes all resources.
+// Is used only when some error has occurred.
+func (hi *httpReader) recoverAfterError() {
+	<-hi.readyChan
+	hi.cleanup()
 	for _, reader := range hi.imageReaders {
 		reader.Close()
 	}
+}
+
+// Closes channels.
+func (hi *httpReader) cleanup() {
+	close(hi.readyChan)
+	close(hi.errorChan)
+	close(hi.loadsChan)
 }
 
 // Downloads all images in parallel. Closes all image readers if context exceeded or if there is any error.
@@ -73,22 +100,16 @@ func (hi *httpReader) downloadImages(ctx context.Context) (map[string]io.ReadClo
 	go hi.downloadObserver()
 
 	select {
-
 	case <-ctx.Done():
-		go func() {
-			<-hi.ready
-			hi.closeReaders()
-		}()
+		go hi.recoverAfterError()
+		return nil, fmt.Errorf("context exceeded while highlite image downloading")
 
-		return nil, fmt.Errorf("Context exceeded while image dowloading")
+	case err := <-hi.errorChan:
+		go hi.recoverAfterError()
+		return nil, fmt.Errorf("image download error: %s", err.Error())
 
-	case <-hi.ready:
-		if hi.err != nil {
-			hi.closeReaders()
-
-			return nil, hi.err
-		}
-
+	case <-hi.readyChan:
+		hi.cleanup()
 		return hi.imageReaders, nil
 	}
 }
