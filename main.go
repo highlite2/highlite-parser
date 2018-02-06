@@ -18,6 +18,7 @@ import (
 
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
+	"highlite-parser/internal/highlite/image"
 )
 
 func main() {
@@ -52,7 +53,7 @@ func main() {
 	}
 
 	memo := cache.NewMemo()
-	productImport := imprt.NewProductImport(syliusClient, memo, logger, dictionary)
+	productImport := imprt.NewProductImport(syliusClient, memo, logger, dictionary, image.HTTPProvider{})
 
 	var itemsReader io.Reader
 	// TODO refactor logic of reader creating

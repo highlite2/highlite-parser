@@ -10,17 +10,19 @@ import (
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius"
 	"highlite-parser/internal/sylius/transfer"
+	"highlite-parser/internal/highlite/image"
 )
 
 // NewProductImport creates new ProductImport.
 func NewProductImport(client sylius.IClient, memo cache.IMemo,
-	logger log.ILogger, dictionary translation.IDictionary) *ProductImport {
+	logger log.ILogger, dictionary translation.IDictionary, imageProvider image.IProvider) *ProductImport {
 	return &ProductImport{
 		logger:         logger,
 		channelName:    "default", // TODO take it from config
 		client:         client,
 		categoryImport: NewCategoryImport(client, memo, logger),
 		dictionary:     dictionary,
+		imageProvider:  imageProvider,
 	}
 }
 
@@ -31,6 +33,7 @@ type ProductImport struct {
 	client         sylius.IClient
 	categoryImport *CategoryImport
 	dictionary     translation.IDictionary
+	imageProvider  image.IProvider
 }
 
 // Import imports highlite product into sylius.
