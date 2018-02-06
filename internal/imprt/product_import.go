@@ -60,6 +60,12 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 		return imageErr
 	}
 
+	defer func(){
+		for _, reader := range images {
+			reader.Close()
+		}
+	}()
+
 	productEntire, createErr := i.client.CreateProduct(ctx, product, images)
 	if createErr != nil {
 		return createErr

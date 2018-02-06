@@ -2,9 +2,10 @@ package sylius
 
 import (
 	"context"
+	"fmt"
+	"io"
 
 	"highlite-parser/internal/sylius/transfer"
-	"io"
 )
 
 // GetTaxon gets a category by code.
@@ -42,9 +43,49 @@ func (c *Client) GetProduct(ctx context.Context, product string) (*transfer.Prod
 
 // CreateProduct creates a product.
 func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, images map[string]io.ReadCloser) (*transfer.ProductEntire, error) {
-	result := &transfer.ProductEntire{}
-	err := c.requestPost(ctx, c.getURL("/v1/products/"), result, product)
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
+	defer cancel()
+
+	request, err := c.getRequestWithToken(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	result := &transfer.ProductEntire{}
+	request.SetResult(result)
+
+	// TODO remove this test
+	request.SetFormData(map[string]string{
+		"code":                                  product.Code,
+		"mainTaxon":                             product.MainTaxon,
+		"productTaxons":                         product.MainTaxon,
+		"translations[ru_RU][name]":             product.Translations["ru_RU"].Name,
+		"translations[ru_RU][slug]":             product.Translations["ru_RU"].Slug,
+		"translations[ru_RU][description]":      product.Translations["ru_RU"].Description,
+		"translations[ru_RU][shortDescription]": product.Translations["ru_RU"].ShortDescription,
+		"translations[en_US][name]":             product.Translations["en_US"].Name,
+		"translations[en_US][slug]":             product.Translations["en_US"].Slug,
+		"translations[en_US][description]":      product.Translations["en_US"].Description,
+		"translations[en_US][shortDescription]": product.Translations["en_US"].ShortDescription,
+		"channels[0]":                           product.Channels[0],
+		"enabled":                               "true",
+	})
+
+	counter := 0
+	for name, reader := range images {
+		request.SetFileReader(fmt.Sprintf("images[%d][file]", counter), name, reader)
+		counter++
+	}
+
+	url := c.getURL("/v1/products/")
+	method := methodPost
+	c.logger.Debugf("Performing [%s] request to %s", method, url)
+
+	if response, err := c.executeRequestWithMethod(request, method, url); err != nil {
+		c.logger.Errorf(err.Error())
+
+		return nil, err
+	} else if err := c.checkResponseStatus(response); err != nil {
 		return nil, err
 	}
 
