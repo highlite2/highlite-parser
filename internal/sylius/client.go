@@ -9,6 +9,7 @@ import (
 
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius/transfer"
+	"io"
 )
 
 const (
@@ -33,7 +34,7 @@ type IClient interface {
 	CreateTaxon(ctx context.Context, taxon transfer.TaxonNew) (*transfer.Taxon, error)
 
 	GetProduct(ctx context.Context, product string) (*transfer.ProductEntire, error)
-	CreateProduct(ctx context.Context, product transfer.Product) (*transfer.ProductEntire, error)
+	CreateProduct(ctx context.Context, product transfer.Product, images map[string]io.ReadCloser) (*transfer.ProductEntire, error)
 	UpdateProduct(ctx context.Context, product transfer.Product) error
 
 	GetProductVariant(ctx context.Context, product string, variant string) (*transfer.VariantEntire, error)

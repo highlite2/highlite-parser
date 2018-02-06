@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"highlite-parser/internal/sylius/transfer"
+	"io"
 )
 
 // GetTaxon gets a category by code.
@@ -40,7 +41,7 @@ func (c *Client) GetProduct(ctx context.Context, product string) (*transfer.Prod
 }
 
 // CreateProduct creates a product.
-func (c *Client) CreateProduct(ctx context.Context, product transfer.Product) (*transfer.ProductEntire, error) {
+func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, images map[string]io.ReadCloser) (*transfer.ProductEntire, error) {
 	result := &transfer.ProductEntire{}
 	err := c.requestPost(ctx, c.getURL("/v1/products/"), result, product)
 	if err != nil {

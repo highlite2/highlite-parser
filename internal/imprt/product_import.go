@@ -54,9 +54,15 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 	}
 
 	product := i.getProductFromHighlite(transfer.ProductEntire{}, high)
-	productEntire, err := i.client.CreateProduct(ctx, product)
-	if err != nil {
-		return err
+
+	images, imageErr := i.imageProvider.GetImages(ctx, high.Images)
+	if imageErr != nil {
+		return imageErr
+	}
+
+	productEntire, createErr := i.client.CreateProduct(ctx, product, images)
+	if createErr != nil {
+		return createErr
 	}
 
 	variant := i.getVariantFromHighlite(transfer.VariantEntire{}, high)
