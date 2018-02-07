@@ -2,28 +2,36 @@ package form
 
 import (
 	"testing"
+
 	"highlite-parser/internal/sylius/transfer"
-	"fmt"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDisplay(t *testing.T) {
-	enc := NewEncoder(getProduct())
-	enc.tag = "json"
+	// arrange
+	enc := NewEncoder(getEncoderTestData())
+	enc.Tag = "json"
+	enc.PathToString = func(path []string) string {
+		if len(path) > 0 && path[0] == "ProductEntire" {
+			path = path[1:]
+		}
 
+		return PathToString(path)
+	}
+
+	// act
 	values, err := enc.Values()
 
+	// assert
 	assert.Nil(t, err)
-
-	for key, val := range values {
-		fmt.Printf("%s: %s\n", key, val)
-	}
+	assert.Equal(t, getEncoderExpectedOutput(), values)
 }
 
-func getProduct() transfer.Product {
+func getEncoderTestData() transfer.Product {
 	return transfer.Product{
 		ProductEntire: transfer.ProductEntire{
-			Code: "code 123",
+			Code: "123123",
 			Images: []transfer.Image{
 				{
 					Type: "image type",
@@ -38,11 +46,25 @@ func getProduct() transfer.Product {
 					ShortDescription: "short description",
 				},
 			},
-			Enabled: true,
+			Enabled: false,
 		},
 
 		MainTaxon:     "main taxon",
-		ProductTaxons: "taxon 1, taxon 2",
+		ProductTaxons: "",
 		Channels:      []string{"ch1", "ch2"},
+	}
+}
+
+func getEncoderExpectedOutput() map[string]string {
+	return map[string]string{
+		"code":                                  "123123",
+		"enabled":                               "",
+		"mainTaxon":                             "main taxon",
+		"channels[0]":                           "ch1",
+		"channels[1]":                           "ch2",
+		"translations[ru_RU][name]":             "name",
+		"translations[ru_RU][slug]":             "slug",
+		"translations[ru_RU][description]":      "description",
+		"translations[ru_RU][shortDescription]": "short description",
 	}
 }

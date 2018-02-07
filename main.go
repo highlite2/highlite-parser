@@ -9,6 +9,7 @@ import (
 	"highlite-parser/internal"
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
+	"highlite-parser/internal/highlite/image"
 	"highlite-parser/internal/highlite/translation"
 	"highlite-parser/internal/imprt"
 	"highlite-parser/internal/log"
@@ -18,7 +19,6 @@ import (
 
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
-	"highlite-parser/internal/highlite/image"
 )
 
 func main() {

@@ -6,11 +6,11 @@ import (
 
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
+	"highlite-parser/internal/highlite/image"
 	"highlite-parser/internal/highlite/translation"
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius"
 	"highlite-parser/internal/sylius/transfer"
-	"highlite-parser/internal/highlite/image"
 )
 
 // NewProductImport creates new ProductImport.
@@ -60,7 +60,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 		return imageErr
 	}
 
-	defer func(){
+	defer func() {
 		for _, reader := range images {
 			reader.Close()
 		}

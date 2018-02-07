@@ -12,8 +12,9 @@ import (
 func TestDownloadImages(t *testing.T) {
 	// arrange
 	p := HTTPProvider{}
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
-	var images []string = []string{"100232.jpg", "100232_detail1.jpg", "100232_draw1.jpg"}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	var images = []string{"100232.jpg", "100232_detail1.jpg", "100232_draw1.jpg"}
 
 	// act
 	result, err := p.GetImages(ctx, images)

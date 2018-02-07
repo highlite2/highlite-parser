@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
 	"highlite-parser/internal/log"
 	"highlite-parser/internal/sylius/transfer"
-	"io"
 )
 
 const (
