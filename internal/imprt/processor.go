@@ -36,9 +36,7 @@ func (p *Processor) Update(ctx context.Context) {
 	csvParser.Separator = ';'
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
-	defer p.handleCSVParserFinish(csvParser)
-
-	for i := 0; i < 1; i++ { // TODO temporary limit
+	for i := 0; i < 50; i++ { // TODO temporary limit
 		select {
 		case <-ctx.Done():
 			p.logger.Warn("Context timeout")
@@ -72,13 +70,4 @@ func (p *Processor) getImportJob(ctx context.Context, high highlite.Product) que
 
 		return err
 	})
-}
-
-// Handles csv parser finish.
-func (p *Processor) handleCSVParserFinish(csvParser *csv.Reader) {
-	if csvParser.Err() != nil {
-		p.logger.Errorf("Csv processing error: %s", csvParser.Err().Error())
-	}
-
-	p.logger.Debug("Stop update")
 }

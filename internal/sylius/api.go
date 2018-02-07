@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"highlite-parser/internal/form"
 	"highlite-parser/internal/sylius/transfer"
 )
 
@@ -46,30 +47,30 @@ func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, im
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
+	result := &transfer.ProductEntire{}
+
 	request, err := c.getRequestWithToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &transfer.ProductEntire{}
-	request.SetResult(result)
+	formEncoder := form.NewEncoder(product)
+	formEncoder.Tag = "json"
+	formEncoder.PathToString = func(path []string) string {
+		if len(path) > 0 && path[0] == "ProductEntire" {
+			path = path[1:]
+		}
 
-	// TODO remove this test
-	request.SetFormData(map[string]string{
-		"code":                                  product.Code,
-		"mainTaxon":                             product.MainTaxon,
-		"productTaxons":                         product.MainTaxon,
-		"translations[ru_RU][name]":             product.Translations["ru_RU"].Name,
-		"translations[ru_RU][slug]":             product.Translations["ru_RU"].Slug,
-		"translations[ru_RU][description]":      product.Translations["ru_RU"].Description,
-		"translations[ru_RU][shortDescription]": product.Translations["ru_RU"].ShortDescription,
-		"translations[en_US][name]":             product.Translations["en_US"].Name,
-		"translations[en_US][slug]":             product.Translations["en_US"].Slug,
-		"translations[en_US][description]":      product.Translations["en_US"].Description,
-		"translations[en_US][shortDescription]": product.Translations["en_US"].ShortDescription,
-		"channels[0]":                           product.Channels[0],
-		"enabled":                               "true",
-	})
+		return form.PathToString(path)
+	}
+
+	values, err := formEncoder.Values()
+	if err != nil {
+		return nil, err
+	}
+
+	request.SetFormData(values)
+	request.SetResult(result)
 
 	counter := 0
 	for name, reader := range images {

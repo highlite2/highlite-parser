@@ -66,6 +66,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 		}
 	}()
 
+	// TODO change image structure and distinguish the "main" image (cover image)
 	productEntire, createErr := i.client.CreateProduct(ctx, product, images)
 	if createErr != nil {
 		return createErr
@@ -80,6 +81,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 }
 
 // Updates product.
+// TODO make PATCH requests only if data really has changed!
 func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.ProductEntire, high highlite.Product) error {
 	if err := i.client.UpdateProduct(ctx, i.getProductFromHighlite(*product, high)); err != nil {
 		return err

@@ -72,7 +72,7 @@ func main() {
 		}
 	}
 
-	jobPool := queue.NewPool(13)
+	jobPool := queue.NewPool(10)
 
 	if itemsReader != nil {
 		processor := imprt.NewProcessor(logger, jobPool, productImport, itemsReader)
