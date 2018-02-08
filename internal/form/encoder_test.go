@@ -24,7 +24,7 @@ func TestDisplay(t *testing.T) {
 func getEncoderTestData() transfer.Product {
 	return transfer.Product{
 		ProductEntire: transfer.ProductEntire{
-			Code: "123123",
+			Code:   "123123",
 			Images: []transfer.Image{},
 			Translations: map[string]transfer.Translation{
 				"ru_RU": {

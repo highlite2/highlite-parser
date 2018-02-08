@@ -8,7 +8,7 @@ type Image struct {
 	Path string `json:"path,omitempty"`
 }
 
-// UploadImage is a help struct to upload images.
+// ImageUpload is a help struct to upload images.
 type ImageUpload struct {
 	Name   string
 	Reader io.Reader

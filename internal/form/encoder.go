@@ -100,7 +100,7 @@ func (e *Encoder) fieldInfo(field reflect.StructField) (name string, skip, omit 
 	return name, skip, omit
 }
 
-// HandleField analyzes the value and processes it according to its type kind.
+// HandleValue analyzes the value and processes it according to its type kind.
 // Custom value kind processor has a higher priority than a builtin. To set a
 // desired behaviour for any value kind you need to add a custom processor to
 // ValueCustomProcessors map with value.Kind() as a key.
@@ -161,11 +161,11 @@ func (e *Encoder) builtinValueProcessor(path []string, v reflect.Value, omitEmpt
 	}
 }
 
-// PathToString is one of the possible implementations of []string to string
-// conversions. It takes a slice of strings, representing a value path, and
-// converts it to a single string. It adds surrounding square brackets for
-// all path parts except the first one. Here is the example how it works:
-// []string{"path", "to", "value", "0"} => "path[to][value][0]"
+// PathToStringConverter is one of the possible implementations of []string
+// to string conversions. It takes a slice of strings, representing a value
+// path, and converts it to a single string. It adds surrounding square
+// brackets for all path parts except the first one. Here is the example how
+// it works: []string{"path", "to", "value", "0"} => "path[to][value][0]"
 func PathToStringConverter(path []string) string {
 	if len(path) == 0 {
 		return ""
