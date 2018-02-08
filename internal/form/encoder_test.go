@@ -11,13 +11,13 @@ import (
 func TestDisplay(t *testing.T) {
 	// arrange
 	enc := NewEncoder(getEncoderTestData())
-	enc.Tag = "json"
-	enc.PathToString = func(path []string) string {
+	enc.FieldTag = "json"
+	enc.PathToStringConverter = func(path []string) string {
 		if len(path) > 0 && path[0] == "ProductEntire" {
 			path = path[1:]
 		}
 
-		return PathToString(path)
+		return PathToStringConverter(path)
 	}
 
 	// act

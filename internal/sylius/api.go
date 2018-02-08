@@ -55,13 +55,13 @@ func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, im
 	}
 
 	formEncoder := form.NewEncoder(product)
-	formEncoder.Tag = "json"
-	formEncoder.PathToString = func(path []string) string {
+	formEncoder.FieldTag = "json"
+	formEncoder.PathToStringConverter = func(path []string) string {
 		if len(path) > 0 && path[0] == "ProductEntire" {
 			path = path[1:]
 		}
 
-		return form.PathToString(path)
+		return form.PathToStringConverter(path)
 	}
 
 	values, err := formEncoder.Values()
