@@ -56,18 +56,14 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 
 	product := i.getProductFromHighlite(transfer.ProductEntire{}, high)
 
-	imageReaders, imageErr := i.imageProvider.GetImages(ctx, high.Images)
+	imageBucket, imageErr := i.imageProvider.GetImages(ctx, high.Images)
 	if imageErr != nil {
 		return imageErr
 	}
 
-	defer func() { // TODO move close function to imageReader struct
-		for _, reader := range imageReaders {
-			reader.Close()
-		}
-	}()
+	defer imageBucket.Close()
 
-	images := prepareImages(high, &product, imageReaders)
+	images := prepareImages(high, &product, imageBucket)
 
 	productEntire, createErr := i.client.CreateProduct(ctx, product, images)
 	if createErr != nil {
