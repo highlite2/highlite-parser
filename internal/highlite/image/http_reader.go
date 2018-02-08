@@ -46,11 +46,12 @@ func (hi *httpReader) init(
 
 // Single download job. Gets an image from the internet and writes the result to the result channel.
 func (hi *httpReader) downloadImage(name string) {
-	response, err := hi.downloadFn(hi.imageLocation + name)
+	url := hi.imageLocation + name
+	response, err := hi.downloadFn(url)
 	if err != nil {
 		hi.loadsChan <- downloadResponse{
 			name: name,
-			err:  err,
+			err:  fmt.Errorf("failed to download image %s: %s", url, err),
 		}
 	} else {
 		hi.loadsChan <- downloadResponse{
@@ -102,11 +103,11 @@ func (hi *httpReader) downloadImages(ctx context.Context) (map[string]io.ReadClo
 	select {
 	case <-ctx.Done():
 		go hi.recoverAfterError()
-		return nil, fmt.Errorf("context exceeded while highlite image downloading")
+		return nil, fmt.Errorf("failed to download images: context exceeded")
 
 	case err := <-hi.errorChan:
 		go hi.recoverAfterError()
-		return nil, fmt.Errorf("image download error: %s", err.Error())
+		return nil, err
 
 	case <-hi.readyChan:
 		hi.cleanup()

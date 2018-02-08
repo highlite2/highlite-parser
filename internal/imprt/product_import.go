@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"fmt"
 
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
@@ -44,21 +45,21 @@ func (i *ProductImport) Import(ctx context.Context, high highlite.Product) error
 	} else if err == sylius.ErrNotFound {
 		return i.createProduct(ctx, high)
 	} else {
-		return err
+		return fmt.Errorf("import: GetProduct client request returned error: %s", err)
 	}
 }
 
 // Creates product.
 func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product) error {
 	if _, err := i.categoryImport.Import(ctx, high.Category3); err != nil {
-		return err
+		return fmt.Errorf("createProduct: failed to import category: %s", err)
 	}
 
 	product := i.getProductFromHighlite(transfer.ProductEntire{}, high)
 
 	imageBucket, imageErr := i.imageProvider.GetImages(ctx, high.Images)
 	if imageErr != nil {
-		return imageErr
+		return fmt.Errorf("createProduct: failed to download images: %s", imageErr)
 	}
 
 	defer imageBucket.Close()
@@ -67,12 +68,12 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 
 	productEntire, createErr := i.client.CreateProduct(ctx, product, images)
 	if createErr != nil {
-		return createErr
+		return fmt.Errorf("createProduct: client CreateProduct returned error: %s", createErr)
 	}
 
 	variant := i.getVariantFromHighlite(transfer.VariantEntire{}, high)
 	if _, err := i.client.CreateProductVariant(ctx, productEntire.Code, variant); err != nil {
-		return err
+		return fmt.Errorf("createProduct: client CreateProductVariant returned error: %s", err)
 	}
 
 	return nil
@@ -82,23 +83,23 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 // TODO make PATCH requests only if data really has changed!
 func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.ProductEntire, high highlite.Product) error {
 	if err := i.client.UpdateProduct(ctx, i.getProductFromHighlite(*product, high)); err != nil {
-		return err
+		return fmt.Errorf("updateProduct: client UpdateProduct returned error: %s", err)
 	}
 
 	variantCode := getProductMainVariantCode(product.Code)
 	if variantEntire, err := i.client.GetProductVariant(ctx, product.Code, variantCode); err != nil {
 		if err != sylius.ErrNotFound {
-			return err
+			return fmt.Errorf("updateProduct: client GetProductVariant returned error: %s", err)
 		}
 
 		variant := i.getVariantFromHighlite(transfer.VariantEntire{}, high)
 		if _, err := i.client.CreateProductVariant(ctx, product.Code, variant); err != nil {
-			return err
+			return fmt.Errorf("updateProduct: client CreateProductVariant returned error: %s", err)
 		}
 	} else {
 		variant := i.getVariantFromHighlite(*variantEntire, high)
 		if err := i.client.UpdateProductVariant(ctx, product.Code, variant); err != nil {
-			return err
+			return fmt.Errorf("updateProduct: client UpdateProductVariant returned error: %s", err)
 		}
 	}
 

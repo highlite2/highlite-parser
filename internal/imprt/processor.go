@@ -61,7 +61,7 @@ func (p *Processor) Update(ctx context.Context) {
 // Creates import job.
 func (p *Processor) getImportJob(ctx context.Context, high highlite.Product) queue.IJob {
 	return queue.NewCallbackJob(func() error {
-		p.logger.Infof("Processing product: %s, category: %s", high.No, high.Category3.GetURL())
+		//p.logger.Infof("Processing product: %s, category: %s", high.No, high.Category3.GetURL())
 
 		err := p.productImport.Import(ctx, high)
 		if err != nil {
