@@ -36,7 +36,7 @@ func (p *Processor) Update(ctx context.Context) {
 	csvParser.Separator = ';'
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
-	for i := 0; i < 5; i++ { // TODO temporary limit
+	for i := 0; i < 50; i++ { // TODO temporary limit
 		select {
 		case <-ctx.Done():
 			p.logger.Warn("Context timeout")
@@ -65,7 +65,7 @@ func (p *Processor) getImportJob(ctx context.Context, high highlite.Product) que
 
 		err := p.productImport.Import(ctx, high)
 		if err != nil {
-			p.logger.Errorf("Product processing error: %s", err.Error())
+			p.logger.Errorf("Product %s processing error: %s", high.No, err.Error())
 		}
 
 		return err

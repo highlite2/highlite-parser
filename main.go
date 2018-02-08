@@ -22,12 +22,13 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute) // TODO change ctx timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	config := internal.GetConfigFromFile("config/config.toml")
 
 	logger := log.GetDefaultLog(config.LogLevel)
+	defer timeTrack(logger, time.Now(), "Import")
 
 	highClient := highlite.NewClient(
 		logger,
@@ -82,4 +83,10 @@ func main() {
 	}
 
 	<-jobPool.Stop()
+}
+
+// Txime logging
+func timeTrack(logger log.ILogger, start time.Time, name string) {
+	elapsed := time.Since(start)
+	logger.Infof("[%s] took %s", name, elapsed)
 }
