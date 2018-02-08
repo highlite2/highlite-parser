@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-resty/resty"
 )
@@ -68,6 +69,8 @@ func (c *Client) checkResponseStatus(response *resty.Response) error {
 // Performs a request. Sets authorization token and handles errors.
 // Creates context with timeout.
 func (c *Client) request(ctx context.Context, method string, url string, result interface{}, body interface{}) error {
+	defer c.timeTrack(time.Now(), fmt.Sprintf("[%s] %s", method, url))
+
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
@@ -84,8 +87,6 @@ func (c *Client) request(ctx context.Context, method string, url string, result 
 		request.SetBody(body)
 	}
 
-	c.logger.Debugf("Performing [%s] request to %s", method, url)
-
 	response, err := c.executeRequestWithMethod(request, method, url)
 	if err != nil {
 		c.logger.Errorf(err.Error())
@@ -94,4 +95,9 @@ func (c *Client) request(ctx context.Context, method string, url string, result 
 	}
 
 	return c.checkResponseStatus(response)
+}
+
+// Time tracking
+func (c *Client) timeTrack(start time.Time, name string) {
+	c.logger.Debugf("%s took %s", name, time.Since(start))
 }

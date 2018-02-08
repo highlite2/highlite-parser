@@ -85,7 +85,7 @@ func main() {
 	<-jobPool.Stop()
 }
 
-// Txime logging
+// Time logging
 func timeTrack(logger log.ILogger, start time.Time, name string) {
 	elapsed := time.Since(start)
 	logger.Infof("[%s] took %s", name, elapsed)

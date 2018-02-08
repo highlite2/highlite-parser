@@ -3,6 +3,7 @@ package sylius
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"highlite-parser/internal/form"
 	"highlite-parser/internal/sylius/transfer"
@@ -43,6 +44,10 @@ func (c *Client) GetProduct(ctx context.Context, product string) (*transfer.Prod
 
 // CreateProduct creates a product.
 func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, images []transfer.ImageUpload) (*transfer.ProductEntire, error) {
+	url := c.getURL("/v1/products/")
+
+	defer c.timeTrack(time.Now(), fmt.Sprintf("Performing [%s] request to %s", methodPost, url))
+
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
@@ -67,9 +72,6 @@ func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, im
 		request.SetFileReader(fmt.Sprintf("images[%d][file]", i), image.Name, image.Reader)
 	}
 
-	url := c.getURL("/v1/products/")
-
-	c.logger.Debugf("Performing [%s] request to %s", methodPost, url)
 	if response, err := c.executeRequestWithMethod(request, methodPost, url); err != nil {
 		c.logger.Errorf(err.Error())
 

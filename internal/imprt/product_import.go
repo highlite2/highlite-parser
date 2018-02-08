@@ -82,9 +82,9 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 // Updates product.
 // TODO make PATCH requests only if data really has changed!
 func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.ProductEntire, high highlite.Product) error {
-	if err := i.client.UpdateProduct(ctx, i.getProductFromHighlite(*product, high)); err != nil {
-		return fmt.Errorf("updateProduct: client UpdateProduct returned error: %s", err)
-	}
+	//if err := i.client.UpdateProduct(ctx, i.getProductFromHighlite(*product, high)); err != nil {
+	//	return fmt.Errorf("updateProduct: client UpdateProduct returned error: %s", err)
+	//}
 
 	variantCode := getProductMainVariantCode(product.Code)
 	if variantEntire, err := i.client.GetProductVariant(ctx, product.Code, variantCode); err != nil {
@@ -97,10 +97,10 @@ func (i *ProductImport) updateProduct(ctx context.Context, product *transfer.Pro
 			return fmt.Errorf("updateProduct: client CreateProductVariant returned error: %s", err)
 		}
 	} else {
-		variant := i.getVariantFromHighlite(*variantEntire, high)
-		if err := i.client.UpdateProductVariant(ctx, product.Code, variant); err != nil {
-			return fmt.Errorf("updateProduct: client UpdateProductVariant returned error: %s", err)
-		}
+		_ = i.getVariantFromHighlite(*variantEntire, high)
+		//if err := i.client.UpdateProductVariant(ctx, product.Code, variant); err != nil {
+		//	return fmt.Errorf("updateProduct: client UpdateProductVariant returned error: %s", err)
+		//}
 	}
 
 	return nil
