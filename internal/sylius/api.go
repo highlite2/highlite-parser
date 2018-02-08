@@ -3,7 +3,6 @@ package sylius
 import (
 	"context"
 	"fmt"
-	"io"
 
 	"highlite-parser/internal/form"
 	"highlite-parser/internal/sylius/transfer"
@@ -43,7 +42,7 @@ func (c *Client) GetProduct(ctx context.Context, product string) (*transfer.Prod
 }
 
 // CreateProduct creates a product.
-func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, images map[string]io.ReadCloser) (*transfer.ProductEntire, error) {
+func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, images []transfer.ImageUpload) (*transfer.ProductEntire, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
@@ -56,14 +55,6 @@ func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, im
 
 	formEncoder := form.NewEncoder(product)
 	formEncoder.FieldTag = "json"
-	formEncoder.PathToStringConverter = func(path []string) string {
-		if len(path) > 0 && path[0] == "ProductEntire" {
-			path = path[1:]
-		}
-
-		return form.PathToStringConverter(path)
-	}
-
 	values, err := formEncoder.Values()
 	if err != nil {
 		return nil, err
@@ -72,17 +63,14 @@ func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, im
 	request.SetFormData(values)
 	request.SetResult(result)
 
-	counter := 0
-	for name, reader := range images {
-		request.SetFileReader(fmt.Sprintf("images[%d][file]", counter), name, reader)
-		counter++
+	for i, image := range images {
+		request.SetFileReader(fmt.Sprintf("images[%d][file]", i), image.Name, image.Reader)
 	}
 
 	url := c.getURL("/v1/products/")
-	method := methodPost
-	c.logger.Debugf("Performing [%s] request to %s", method, url)
 
-	if response, err := c.executeRequestWithMethod(request, method, url); err != nil {
+	c.logger.Debugf("Performing [%s] request to %s", methodPost, url)
+	if response, err := c.executeRequestWithMethod(request, methodPost, url); err != nil {
 		c.logger.Errorf(err.Error())
 
 		return nil, err

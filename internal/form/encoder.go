@@ -126,7 +126,11 @@ func (e *Encoder) builtinValueProcessor(path []string, v reflect.Value, omitEmpt
 	case reflect.Struct:
 		for i := 0; i < v.NumField(); i++ {
 			if name, skip, omit := e.fieldInfo(v.Type().Field(i)); !skip {
-				e.HandleValue(append(path, name), v.Field(i), omit)
+				if v.Type().Field(i).Anonymous {
+					e.HandleValue(path, v.Field(i), omit)
+				} else {
+					e.HandleValue(append(path, name), v.Field(i), omit)
+				}
 			}
 		}
 

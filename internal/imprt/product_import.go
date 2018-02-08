@@ -3,6 +3,7 @@ package imprt
 import (
 	"context"
 	"strings"
+	"io"
 
 	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
@@ -55,18 +56,19 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 
 	product := i.getProductFromHighlite(transfer.ProductEntire{}, high)
 
-	images, imageErr := i.imageProvider.GetImages(ctx, high.Images)
+	imageReaders, imageErr := i.imageProvider.GetImages(ctx, high.Images)
 	if imageErr != nil {
 		return imageErr
 	}
 
-	defer func() {
-		for _, reader := range images {
+	defer func() { // TODO move close function to imageReader struct
+		for _, reader := range imageReaders {
 			reader.Close()
 		}
 	}()
 
-	// TODO change image structure and distinguish the "main" image (cover image)
+	images := prepareImages(high, &product, imageReaders)
+
 	productEntire, createErr := i.client.CreateProduct(ctx, product, images)
 	if createErr != nil {
 		return createErr
@@ -140,6 +142,7 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 	product.MainTaxon = high.Category3.GetCode()
 	product.ProductTaxons = strings.Join([]string{high.Category3.GetCode(), high.Category2.GetCode(), high.Category1.GetCode()}, ",")
 	product.Channels = []string{i.channelName}
+	product.Images = nil
 
 	if len(product.Translations) == 0 {
 		product.Translations = make(map[string]transfer.Translation)
@@ -179,6 +182,35 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 	return product
 }
 
+// Product main variant name.
 func getProductMainVariantCode(productCode string) string {
 	return productCode + "_main"
+}
+
+// Prepares image structure to pass it to sylius API.
+func prepareImages(high highlite.Product, product *transfer.Product, readers map[string]io.ReadCloser) []transfer.ImageUpload {
+	var images []transfer.ImageUpload
+
+	if len(readers) > 0 {
+		product.Images = make([]transfer.Image, len(readers))
+		images = make([]transfer.ImageUpload, len(readers))
+
+		i := 0
+		for name, reader := range readers {
+			if name == high.Images[0] {
+				product.Images[i] = transfer.Image{
+					Type: "main",
+				}
+			}
+
+			images[i] = transfer.ImageUpload{
+				Name:   name,
+				Reader: reader,
+			}
+
+			i++
+		}
+	}
+
+	return images
 }

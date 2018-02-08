@@ -12,13 +12,6 @@ func TestDisplay(t *testing.T) {
 	// arrange
 	enc := NewEncoder(getEncoderTestData())
 	enc.FieldTag = "json"
-	enc.PathToStringConverter = func(path []string) string {
-		if len(path) > 0 && path[0] == "ProductEntire" {
-			path = path[1:]
-		}
-
-		return PathToStringConverter(path)
-	}
 
 	// act
 	values, err := enc.Values()
@@ -32,12 +25,7 @@ func getEncoderTestData() transfer.Product {
 	return transfer.Product{
 		ProductEntire: transfer.ProductEntire{
 			Code: "123123",
-			Images: []transfer.Image{
-				{
-					Type: "image type",
-					Path: "image path",
-				},
-			},
+			Images: []transfer.Image{},
 			Translations: map[string]transfer.Translation{
 				"ru_RU": {
 					Name:             "name",

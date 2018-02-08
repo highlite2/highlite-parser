@@ -36,7 +36,7 @@ func (p *Processor) Update(ctx context.Context) {
 	csvParser.Separator = ';'
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
-	for i := 0; i < 5; i++ { // TODO temporary limit
+	for i := 0; i < 1; i++ { // TODO temporary limit
 		select {
 		case <-ctx.Done():
 			p.logger.Warn("Context timeout")

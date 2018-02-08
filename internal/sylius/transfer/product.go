@@ -4,7 +4,7 @@ package transfer
 type ProductEntire struct {
 	Code         string                 `json:"code,omitempty"`
 	Translations map[string]Translation `json:"translations,omitempty"`
-	Images       []Image                `json:"-"`
+	Images       []Image                `json:"images,omitempty"`
 	Enabled      bool                   `json:"enabled"`
 }
 

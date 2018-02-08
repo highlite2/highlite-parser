@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
@@ -34,7 +33,7 @@ type IClient interface {
 	CreateTaxon(ctx context.Context, taxon transfer.TaxonNew) (*transfer.Taxon, error)
 
 	GetProduct(ctx context.Context, product string) (*transfer.ProductEntire, error)
-	CreateProduct(ctx context.Context, product transfer.Product, images map[string]io.ReadCloser) (*transfer.ProductEntire, error)
+	CreateProduct(ctx context.Context, product transfer.Product, images []transfer.ImageUpload) (*transfer.ProductEntire, error)
 	UpdateProduct(ctx context.Context, product transfer.Product) error
 
 	GetProductVariant(ctx context.Context, product string, variant string) (*transfer.VariantEntire, error)
