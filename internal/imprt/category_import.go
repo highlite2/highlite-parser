@@ -35,8 +35,7 @@ func (i *CategoryImport) Import(ctx context.Context, category *highlite.Category
 	taxon, err := i.memoGetCategory(ctx, category)
 	if err == nil {
 		return taxon, nil
-
-	} else if err == sylius.ErrNotFound {
+	} else {
 		if category.Parent != nil {
 			_, err := i.Import(ctx, category.Parent)
 			if err != nil {
@@ -51,15 +50,15 @@ func (i *CategoryImport) Import(ctx context.Context, category *highlite.Category
 
 		return taxon, nil
 
-	} else {
-		return nil, fmt.Errorf("%s (%s) memoGetCategory: %s", category.Name, category.GetCode(), err)
 	}
 }
 
 // Tries to find a categoryImport. Stores the result in local memory. Concurrent
 // requests for the same key are blocked until the first completes.
 func (i *CategoryImport) memoGetCategory(ctx context.Context, category *highlite.Category) (*transfer.Taxon, error) {
-	data, err := i.memo.Get(category.GetCode(), func() (interface{}, error) {
+	data, err := i.memo.GetOnce(category.GetCode(), func() (interface{}, error) {
+		i.logger.Debugf("GetTaxon %s", category.GetCode())
+
 		return i.client.GetTaxon(ctx, category.GetCode())
 	})
 
@@ -74,6 +73,8 @@ func (i *CategoryImport) memoGetCategory(ctx context.Context, category *highlite
 // requests for the same key are blocked until the first completes.
 func (i *CategoryImport) memoCreateCategory(ctx context.Context, category *highlite.Category) (*transfer.Taxon, error) {
 	data, err := i.memo.Get(category.GetCode(), func() (interface{}, error) {
+		i.logger.Debugf("CreateTaxon %s", category.GetCode())
+
 		return i.client.CreateTaxon(ctx, i.createNewTaxonFromHighliteCategory(category))
 	})
 

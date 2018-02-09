@@ -102,7 +102,9 @@ func (p Product) ProductDescription() string {
 
 // GetProductFromCSVImport creates product object from csv import data.
 func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
-	cat1 := NewCategory(mapper.GetString(titleCategory, values), nil)
+	cat0 := NewCategory("Category", nil)
+	cat0.Root = true
+	cat1 := NewCategory(mapper.GetString(titleCategory, values), cat0)
 	cat2 := NewCategory(mapper.GetString(titleSubcategory1, values), cat1)
 	cat3 := NewCategory(mapper.GetString(titleSubcategory2, values), cat2)
 

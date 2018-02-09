@@ -12,6 +12,7 @@ func NewCategory(name string, parent *Category) *Category {
 type Category struct {
 	Identification
 
+	Root   bool
 	Name   string
 	Parent *Category
 }
@@ -27,7 +28,7 @@ func (c *Category) GetCode() string {
 
 // GetURL returns category full url (combined with parent's url).
 func (c *Category) GetURL() string {
-	if c.Parent != nil {
+	if c.Parent != nil && !c.Parent.Root {
 		return c.Parent.GetURL() + "/" + c.URL
 	}
 

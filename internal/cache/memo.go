@@ -2,10 +2,19 @@ package cache
 
 // IMemo is a memorization of a callback by key.
 type IMemo interface {
-	// GetString takes the value for a key from cache, and if there is no such,
-	// executes the callback and puts the result into the cache.
+	// Get takes the value for a key from cache, and if there is no such,
+	// executes the callback and puts the result into the cache. If callback has
+	// already been executed and returned an error - callback will be invoked again.
 	Get(key string, callback MemoCallback) (interface{}, error)
+
+	// GetOnce takes the value for a key from cache, and if there is no such,
+	// executes the callback and puts the result into the cache. If callback has
+	// already been executed and returned an error - callback will not be called
+	// once again.
+	GetOnce(key string, callback MemoCallback) (interface{}, error)
 }
+
+var _ IMemo = (*Memo)(nil)
 
 // MemoCallback is a callback, that has to be executed to get a result for the key.
 type MemoCallback func() (interface{}, error)
@@ -16,25 +25,26 @@ type memoResult struct {
 	err   error
 }
 
-// memoRequest is a message to a memo server, telling what key client wants to get
+// memoRequest is a message to a Memo server, telling what key client wants to get
 // and what callback must be executed in order to get the result (if there is yet
 // nothing in cache.
 type memoRequest struct {
 	key      string
+	repeat   bool
 	callback MemoCallback
 	response chan<- memoResult
 }
 
-// memo is an implementation of a IMemo interface.
-type memo struct {
+// Memo is an implementation of a IMemo interface.
+type Memo struct {
 	requests chan memoRequest
 }
 
 // NewMemo provides a concurrency-safe non-blocking memoization of a function.
 // Requests for different keys proceed in parallel.
 // Concurrent requests for the same key block until the first completes.
-func NewMemo() IMemo {
-	m := &memo{
+func NewMemo() *Memo {
+	m := &Memo{
 		requests: make(chan memoRequest),
 	}
 	go m.server()
@@ -42,11 +52,27 @@ func NewMemo() IMemo {
 	return m
 }
 
-// GetString takes the value for a key from cache, and if there is no such,
-// executes the callback and puts the result into the cache.
-func (m *memo) Get(key string, callback MemoCallback) (interface{}, error) {
+// Get takes the value for a key from cache, and if there is no such,
+// executes the callback and puts the result into the cache. If callback has
+// already been executed and returned an error - callback will be invoked again.
+func (m *Memo) Get(key string, callback MemoCallback) (interface{}, error) {
+	return m.get(key, true, callback)
+}
+
+// GetOnce takes the value for a key from cache, and if there is no such,
+// executes the callback and puts the result into the cache. If callback has
+// already been executed and returned an error - callback will not be called
+// once again.
+func (m *Memo) GetOnce(key string, callback MemoCallback) (interface{}, error) {
+	return m.get(key, false, callback)
+}
+
+// Takes the value for a key from cache, and if there is no such, executes the
+// callback and puts the result into the cache.
+func (m *Memo) get(key string, repeat bool, callback MemoCallback) (interface{}, error) {
 	response := make(chan memoResult)
 	m.requests <- memoRequest{
+		repeat:   repeat,
 		key:      key,
 		callback: callback,
 		response: response,
@@ -57,11 +83,11 @@ func (m *memo) Get(key string, callback MemoCallback) (interface{}, error) {
 }
 
 // handles requests
-func (m *memo) server() {
+func (m *Memo) server() {
 	mem := make(map[string]*memoEntry)
 	for req := range m.requests {
 		e := mem[req.key]
-		if e == nil || e.res.err != nil {
+		if e == nil || (e.res.err != nil && req.repeat) {
 			e = &memoEntry{
 				ready: make(chan struct{}),
 			}
