@@ -140,9 +140,13 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 
 // Converts string containing product images to a slice of strings.
 func parseImages(str string) []string {
-	images := strings.Split(str, "|")
-	for i, image := range images {
-		images[i] = strings.Trim(image, " ")
+	split := strings.Split(str, "|")
+	images := make([]string, 0, len(split))
+	for _, im := range split {
+		im = strings.Trim(im, " ")
+		if im != "" {
+			images = append(images, im)
+		}
 	}
 
 	return images

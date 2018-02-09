@@ -17,3 +17,15 @@ func TestParseImages(t *testing.T) {
 	// assert
 	assert.Equal(t, expected, actual)
 }
+
+func TestParseEmptyImages(t *testing.T) {
+	// arrange
+	testData := ""
+	expected := []string{}
+
+	// act
+	actual := parseImages(testData)
+
+	// assert
+	assert.Equal(t, expected, actual)
+}
