@@ -2,6 +2,7 @@ package image
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -48,6 +49,11 @@ func (hi *httpReader) init(
 func (hi *httpReader) downloadImage(name string) {
 	url := hi.imageLocation + name
 	response, err := hi.downloadFn(url)
+
+	if err == nil && response.StatusCode != http.StatusOK {
+		err = errors.New(response.Status)
+	}
+
 	if err != nil {
 		hi.loadsChan <- downloadResponse{
 			name: name,

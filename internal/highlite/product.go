@@ -133,9 +133,19 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	product.Code = "highlite-" + product.No
 
 	imagesString := mapper.GetString(titleImagesList, values)
-	product.Images = strings.Fields(strings.Replace(imagesString, "|", " ", -1))
+	product.Images = parseImages(imagesString)
 
 	return product
+}
+
+// Converts string containing product images to a slice of strings.
+func parseImages(str string) []string {
+	images := strings.Split(str, "|")
+	for i, image := range images {
+		images[i] = strings.Trim(image, " ")
+	}
+
+	return images
 }
 
 // Removes specific for highlite html tags.
