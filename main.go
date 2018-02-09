@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour * 3)
 	defer cancel()
 
 	config := internal.GetConfigFromFile("config/config.toml")

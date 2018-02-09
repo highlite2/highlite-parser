@@ -40,19 +40,19 @@ func (i *CategoryImport) Import(ctx context.Context, category *highlite.Category
 		if category.Parent != nil {
 			_, err := i.Import(ctx, category.Parent)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("%s (%s) parent category: %s", category.Name, category.GetCode(), err)
 			}
 		}
 
 		_, err := i.memoCreateCategory(ctx, category)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s (%s) memoCreateCategory: %s", category.Name, category.GetCode(), err)
 		}
 
 		return taxon, nil
 
 	} else {
-		return nil, err
+		return nil, fmt.Errorf("%s (%s) memoGetCategory: %s", category.Name, category.GetCode(), err)
 	}
 }
 
