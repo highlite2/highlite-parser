@@ -1,54 +1,12 @@
-curl http://localhost:1221/app_dev.php/api/oauth/v2/token \
-    -d "client_id"=demo_client \
-    -d "client_secret"=secret_demo_client \
-    -d "grant_type"=password \
-    -d "username"=api@example.com \
-    -d "password"=sylius-api
+php bin/console sylius:install:database
 
-# Product request
-$ curl http://localhost:1221/app_dev.php/api/v1/products/lcd_504_100205 \
-    -H "Authorization: Bearer ZTkzODllMDUxZGM4MzY1NmZlYWU1ZjlkNDE3M2ZlODg2ZGVkNzU2MmEzYWFjMDM1MTc1MTM0MmNmNzFmMWY2Yg" \
-    -H "Accept: application/json"
+php bin/console sylius:install:setup
 
-$ curl http://localhost:1221/app_dev.php/api/v1/products/002a86a0-f7bd-31c4-8a36-1d1267ee2086 \
-    -H "Authorization: Bearer YWM2ZThmYmY3ZmRhNDhhZWI1MzkyZWU3OTQ4YTJhNjc5YzNhMzg0YTFiNjI4ZTg5N2QyNGY3Y2ZlYmVhNGM3Mg" \
-    -H "Accept: application/json"
+php bin/console sylius:user:promote
+> ROLE_API_ACCESS
 
-$ curl http://localhost:1221/app_dev.php/api/v1/products/0a7131a0-4200-3504-835e-b80f6bb33cdb/variants/ \
-    -H "Authorization: Bearer YzFhZmM2ZDJjM2U4NjZiMDUxZDg5MTkxNDI1ZGY5YTA5MGJkMmVjMjUxYjM5Nzg3OTk1NmU4ZTQ1Njc4MmQxMw" \
-    -H "Accept: application/json" | python -mjson.tool
+php bin/console sylius:oauth-server:create-client \
+    --grant-type="password" \
+    --grant-type="refresh_token" \
+    --grant-type="token"
 
-$ curl http://localhost:1221/app_dev.php/api/v1/products/0a7131a0-4200-3504-835e-b80f6bb33cdb/variants/0a7131a0-4200-3504-835e-b80f6bb33cdb-variant-0 \
-    -H "Authorization: Bearer YzFhZmM2ZDJjM2U4NjZiMDUxZDg5MTkxNDI1ZGY5YTA5MGJkMmVjMjUxYjM5Nzg3OTk1NmU4ZTQ1Njc4MmQxMw" \
-    -H "Accept: application/json" | python -mjson.tool
-
-# Users request
-curl http://localhost:1221/app_dev.php/api/v1/users/ \
-    -H "Authorization: Bearer OTkzNjE4M2I2YWYxNWM3MDA4MTdmNmUyYjIwZTcyN2Y3ZjNhNjRlMjc2ZWI3OTA0MjE5NmI2ZjBiMzc5MzMyZQ"
-
-curl http://localhost:1221/app_dev.php/api/v1/users/3 \
-    -H "Authorization: Bearer M2EyM2JjZjlkYzdjZTc0NGNiNGYxNDQ2Y2NiMmMyMjk0MTg1MjQzMWExMjk3NjhmOTE5YmI5ZGY1NmVhMmE5NQ"
-
-# Taxon request
-curl http://localhost:1221/app_dev.php/api/v1/taxons/mens_t_shirts \
-    -H "Authorization: Bearer YzFhZmM2ZDJjM2U4NjZiMDUxZDg5MTkxNDI1ZGY5YTA5MGJkMmVjMjUxYjM5Nzg3OTk1NmU4ZTQ1Njc4MmQxMw" \
-    -H "Accept: application/json"
-
-# Create taxon request
-curl http://localhost:1221/app_dev.php/api/v1/taxons/ \
-    -H "Authorization: Bearer NDk0M2EzYzRkMWVmMzNjY2ZkYzM2OTA1ODc2MGEzYzZjOTFkYzM1NDYxYzdjNTExMjc4ZTJmOWE0Mjg4N2E3MQ" \
-    -H "Content-Type: application/json" \
-    -X POST \
-    --data '
-        {
-            "code": "toys2",
-            "parent": "toys",
-            "translations": {
-                  "en_US": {
-                    "description": "Test category 2.",
-                    "name": "Toys2",
-                    "slug": "toys2"
-                  }
-                }
-        }
-    ' | python -mjson.tool
