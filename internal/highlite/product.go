@@ -83,9 +83,10 @@ type Product struct {
 	Height  float64
 	Price   float64
 
-	Category1 *Category
-	Category2 *Category
-	Category3 *Category
+	CategoryRoot *Category
+	Category1    *Category
+	Category2    *Category
+	Category3    *Category
 
 	Images []string
 }
@@ -126,9 +127,10 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 		Height:  mapper.GetFloat(titleHeight, values),
 		Price:   mapper.GetFloat(titleUnitPrice, values),
 
-		Category1: cat1,
-		Category2: cat2,
-		Category3: cat3,
+		CategoryRoot: cat0,
+		Category1:    cat1,
+		Category2:    cat2,
+		Category3:    cat3,
 	}
 
 	product.SetCodeAndURL(product.Name + " " + product.No)

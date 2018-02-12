@@ -137,7 +137,10 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 	product := transfer.Product{ProductEntire: productEntire}
 	product.Code = high.Code
 	product.MainTaxon = high.Category3.GetCode()
-	product.ProductTaxons = strings.Join([]string{high.Category3.GetCode(), high.Category2.GetCode(), high.Category1.GetCode()}, ",")
+	product.ProductTaxons = strings.Join(
+		[]string{high.Category3.GetCode(), high.Category2.GetCode(), high.Category1.GetCode(), high.CategoryRoot.GetCode()},
+		",",
+	)
 	product.Channels = []string{i.channelName}
 	product.Images = nil
 
