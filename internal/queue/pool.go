@@ -4,6 +4,14 @@ import (
 	"sync"
 )
 
+// IPool is a worker queue.
+type IPool interface {
+	// AddJob adds job to the worker queue.
+	AddJob(job IJob) <-chan bool
+	// Stop stops all workers.
+	Stop() <-chan bool
+}
+
 // NewPool creates a new instance of pool.
 func NewPool(workerCount uint) *Pool {
 	jobs := make(chan IJob)

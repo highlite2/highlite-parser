@@ -15,6 +15,12 @@ import (
 	"highlite-parser/internal/sylius/transfer"
 )
 
+// IProductImport imports highlite product into sylius.
+type IProductImport interface {
+	// Import imports highlite product into sylius.
+	Import(ctx context.Context, high highlite.Product) error
+}
+
 // NewProductImport creates new ProductImport.
 func NewProductImport(client sylius.IClient, memo cache.IMemo,
 	logger log.ILogger, dictionary translation.IDictionary, imageProvider image.IProvider) *ProductImport {
