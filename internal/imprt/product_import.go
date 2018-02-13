@@ -149,7 +149,7 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 	}
 
 	product.Translations[transfer.LocaleEn] = transfer.Translation{
-		Name:             high.Name,
+		Name:             high.ProductName(),
 		Slug:             high.URL,
 		Description:      high.ProductDescription(),
 		ShortDescription: high.SubHeading,
@@ -157,7 +157,7 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 
 	if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok {
 		product.Translations[transfer.LocaleRu] = transfer.Translation{
-			Name:             high.Name,
+			Name:             high.ProductName(),
 			Slug:             high.URL,
 			Description:      item.GetDescription(),
 			ShortDescription: item.GetShortDescription(),
@@ -165,7 +165,7 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 	} else {
 		i.logger.Warnf("Can't find translations for product No %s", product.Code)
 		product.Translations[transfer.LocaleRu] = transfer.Translation{
-			Name:             high.Name,
+			Name:             high.ProductName(),
 			Slug:             high.URL,
 			Description:      high.ProductDescription(),
 			ShortDescription: high.SubHeading,

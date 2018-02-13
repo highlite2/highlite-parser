@@ -101,6 +101,15 @@ func (p Product) ProductDescription() string {
 	return description
 }
 
+// ProductName combines name from brand and name fields.
+func (p Product) ProductName() string {
+	if p.Brand == "" {
+		return p.Name
+	}
+
+	return p.Brand + " " + p.Name
+}
+
 // GetProductFromCSVImport creates product object from csv import data.
 func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	cat0 := NewCategory("Category", nil)
