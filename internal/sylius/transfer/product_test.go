@@ -2,6 +2,7 @@ package transfer
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -27,46 +28,17 @@ func TestProductEntire_UnmarshalJSON(t *testing.T) {
 }
 
 func TestProductsEqual_Equal(t *testing.T) {
-	// arrange
-	entire := getProductFromJSON()
-	product := Product{
-		ProductEntire: entire,
-		MainTaxon:     "entertainment_lighting_moving_heads_moving_heads_panels",
-		ProductTaxons: "entertainment_lighting, entertainment_lighting_moving_heads, entertainment_lighting_moving_heads_moving_heads_panels",
-		Channels:      []string{"default"},
-	}
+	for i, test := range testProductsEqualCases {
+		// arrange
+		filter := test.filter(getProductEntireEqualProductMock())
 
-	// act
-	// assert
-	assert.True(t, ProductsEqual(entire, product))
-}
-
-func TestProductsEqual_NotEqual_1(t *testing.T) {
-	// arrange
-	product := getEqualProduct()
-	product.Code = "wrong"
-
-	// act
-	// assert
-	assert.False(t, ProductsEqual(getProductFromJSON(), product))
-}
-
-func getEqualProduct() Product {
-	return Product{
-		ProductEntire: getProductFromJSON(),
-		MainTaxon:     "entertainment_lighting_moving_heads_moving_heads_panels",
-		ProductTaxons: "entertainment_lighting, entertainment_lighting_moving_heads, entertainment_lighting_moving_heads_moving_heads_panels",
-		Channels:      []string{"default"},
+		// act
+		// assert
+		assert.Equal(t, test.equal, ProductsEqual(getProductEntireMock(), filter), fmt.Sprintf("Failed test with index %d", i))
 	}
 }
-
-var getProductFromJSONCache *ProductEntire
 
 func getProductFromJSON() ProductEntire {
-	if getProductFromJSONCache != nil {
-		return *getProductFromJSONCache
-	}
-
 	bytes, err := ioutil.ReadFile("_test_data/product-example.json")
 	if err != nil {
 		panic(err)
@@ -78,7 +50,135 @@ func getProductFromJSON() ProductEntire {
 		panic(err)
 	}
 
-	getProductFromJSONCache = &product
-
 	return product
+}
+
+func getProductEntireEqualProductMock() Product {
+	return Product{
+		ProductEntire: getProductEntireMock(),
+		MainTaxon:     "taxon1",
+		ProductTaxons: "taxon1, taxon2, taxon3",
+		Channels:      []string{"channel1", "channel2"},
+	}
+}
+
+func getProductEntireMock() ProductEntire {
+	return ProductEntire{
+		Code: "code",
+		Translations: map[string]Translation{
+			"en_US": {
+				Name:             "name",
+				Description:      "description",
+				Slug:             "slug",
+				ShortDescription: "short description",
+			},
+		},
+		MainTaxon: &Taxon{
+			Code: "taxon1",
+		},
+		ProductTaxons: []TaxonWrap{
+			{Taxon: Taxon{Code: "taxon1"}},
+			{Taxon: Taxon{Code: "taxon2"}},
+			{Taxon: Taxon{Code: "taxon3"}},
+		},
+		Channels: []Channel{
+			{Code: "channel1"},
+			{Code: "channel2"},
+		},
+	}
+}
+
+var testProductsEqualCases = []struct {
+	equal  bool
+	filter func(v Product) Product
+}{
+	{
+		equal: true,
+		filter: func(v Product) Product {
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			v.Code = ""
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			tr := v.Translations["en_US"]
+			tr.Name = ""
+			v.Translations["en_US"] = tr
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			tr := v.Translations["en_US"]
+			tr.Description = ""
+			v.Translations["en_US"] = tr
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			tr := v.Translations["en_US"]
+			tr.Slug = ""
+			v.Translations["en_US"] = tr
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			tr := v.Translations["en_US"]
+			tr.ShortDescription = ""
+			v.Translations["en_US"] = tr
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			tr := v.Translations["en_US"]
+			v.Translations["new"] = tr
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			v.Translations = map[string]Translation{}
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			v.Channels[0] = "not default"
+			return v
+		},
+	},
+	{
+		equal: true,
+		filter: func(v Product) Product {
+			v.Channels[0], v.Channels[1] = v.Channels[1], v.Channels[0]
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			v.ProductTaxons = "taxon3, taxon1"
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			v.MainTaxon = ""
+			return v
+		},
+	},
+	{
+		equal: true,
+		filter: func(v Product) Product {
+			v.ProductTaxons = "taxon3, taxon2, taxon1"
+			return v
+		},
+	},
 }
