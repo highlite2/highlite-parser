@@ -18,7 +18,7 @@ func TestParseImages(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestParseEmptyImages(t *testing.T) {
+func TestParseImages_Empty(t *testing.T) {
 	// arrange
 	testData := ""
 	expected := []string{}
@@ -28,4 +28,14 @@ func TestParseEmptyImages(t *testing.T) {
 
 	// assert
 	assert.Equal(t, expected, actual)
+}
+
+func TestProduct_ProductName(t *testing.T) {
+	// arrange
+	product1 := Product{Name: "name", }
+	product2 := Product{Name: "name", Brand: "brand"}
+
+	// assert
+	assert.Equal(t, "name", product1.ProductName())
+	assert.Equal(t, "brand name", product2.ProductName())
 }
