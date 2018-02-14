@@ -36,7 +36,8 @@ func (p *Processor) Update(ctx context.Context) {
 	csvParser.Separator = ';'
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
-	for i := 0; i < 6000; i++ { // TODO temporary limit
+	i := 0
+	for i < 100 { // TODO temporary limit
 		select {
 		case <-ctx.Done():
 			p.logger.Warn("Context timeout")
@@ -54,6 +55,11 @@ func (p *Processor) Update(ctx context.Context) {
 
 			product := highlite.GetProductFromCSVImport(csvMapper, csvParser.Values())
 			<-p.workerPool.AddJob(p.getImportJob(ctx, product))
+		}
+
+		i++
+		if i%50 == 0 {
+			p.logger.Infof("Processed %d products", i)
 		}
 	}
 }
