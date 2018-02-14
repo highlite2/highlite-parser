@@ -138,6 +138,7 @@ func (i *ProductImport) getVariantFromHighlite(variantEntire transfer.VariantEnt
 func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEntire, high highlite.Product) transfer.Product {
 	product := transfer.Product{ProductEntire: productEntire}
 	product.Code = high.Code
+	product.Enabled = true
 	product.MainTaxon = high.Category3.GetCode()
 	product.ProductTaxons = strings.Join(
 		[]string{high.Category3.GetCode(), high.Category2.GetCode(), high.Category1.GetCode(), high.CategoryRoot.GetCode()},
@@ -173,13 +174,6 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 			ShortDescription: high.SubHeading,
 		}
 	}
-
-	product.Enabled = true
-
-	//switch high.Status { // TODO move status to product attributes. Product should be available in the store even if it is out of stock.
-	//case highlite.StatusDecline, highlite.StatusEOL:
-	//	product.Enabled = false
-	//}
 
 	return product
 }
