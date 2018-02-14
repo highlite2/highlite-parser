@@ -5,3 +5,5 @@ _tmp/
 
 config/*
 !config/_config.toml
+
+internal/test/mocks/

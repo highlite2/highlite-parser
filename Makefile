@@ -12,6 +12,12 @@ deps:
 	${INFO} "Installing dependencies..."
 	@ glide install
 
+.PHONY: gen
+gen:
+	${INFO} "Generating mocks..."
+	@ cd vendor/github.com/vektra/mockery/cmd/mockery/ && go install ./...
+	@ go generate ${GOPACKAGES}
+
 .PHONY: test
 test:
 	${INFO} "Running tests..."

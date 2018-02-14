@@ -35,22 +35,21 @@ func (i *CategoryImport) Import(ctx context.Context, category *highlite.Category
 	taxon, err := i.memoGetCategory(ctx, category)
 	if err == nil {
 		return taxon, nil
-	} else {
-		if category.Parent != nil {
-			_, err := i.Import(ctx, category.Parent)
-			if err != nil {
-				return nil, fmt.Errorf("%s (%s) parent category: %s", category.Name, category.GetCode(), err)
-			}
-		}
-
-		_, err := i.memoCreateCategory(ctx, category)
-		if err != nil {
-			return nil, fmt.Errorf("%s (%s) memoCreateCategory: %s", category.Name, category.GetCode(), err)
-		}
-
-		return taxon, nil
-
 	}
+
+	if category.Parent != nil {
+		_, err := i.Import(ctx, category.Parent)
+		if err != nil {
+			return nil, fmt.Errorf("%s (%s) parent category: %s", category.Name, category.GetCode(), err)
+		}
+	}
+
+	_, err = i.memoCreateCategory(ctx, category)
+	if err != nil {
+		return nil, fmt.Errorf("%s (%s) memoCreateCategory: %s", category.Name, category.GetCode(), err)
+	}
+
+	return taxon, nil
 }
 
 // Tries to find a categoryImport. Stores the result in local memory. Concurrent
