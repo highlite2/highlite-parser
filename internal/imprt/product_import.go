@@ -130,10 +130,6 @@ func (i *ProductImport) getVariantFromHighlite(variantEntire transfer.VariantEnt
 			Price: high.Price,
 		},
 	}
-	variant.Width = high.Width
-	variant.Height = high.Height
-	variant.Weight = high.Weight
-	variant.Depth = high.Length
 
 	return variant
 }
