@@ -32,7 +32,7 @@ func TestParseImages_Empty(t *testing.T) {
 
 func TestProduct_ProductName(t *testing.T) {
 	// arrange
-	product1 := Product{Name: "name", }
+	product1 := Product{Name: "name"}
 	product2 := Product{Name: "name", Brand: "brand"}
 
 	// assert

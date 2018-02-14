@@ -29,6 +29,12 @@ type taxonRaw struct {
 	Translations json.RawMessage `json:"translations"`
 }
 
+// TaxonWrap is used in sylius product response to wrap product taxons.
+type TaxonWrap struct {
+	ID    int   `json:"id"`
+	Taxon Taxon `json:"taxon"`
+}
+
 // UnmarshalJSON helps to fix inconsistency in sylius api response.
 func (t *Taxon) UnmarshalJSON(value []byte) error {
 	raw := &taxonRaw{}

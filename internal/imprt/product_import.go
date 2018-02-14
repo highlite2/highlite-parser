@@ -180,10 +180,10 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 
 	product.Enabled = true
 
-	switch high.Status {
-	case highlite.StatusDecline, highlite.StatusEOL:
-		product.Enabled = false
-	}
+	//switch high.Status { // TODO move status to product attributes. Product should be available in the store even if it is out of stock.
+	//case highlite.StatusDecline, highlite.StatusEOL:
+	//	product.Enabled = false
+	//}
 
 	return product
 }
