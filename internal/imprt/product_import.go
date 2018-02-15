@@ -147,32 +147,23 @@ func (i *ProductImport) getProductFromHighlite(productEntire transfer.ProductEnt
 	product.Channels = []string{i.channelName}
 	product.Images = nil
 
-	if len(product.Translations) == 0 {
-		product.Translations = make(map[string]transfer.Translation)
-	}
-
-	product.Translations[transfer.LocaleEn] = transfer.Translation{
+	tr := transfer.Translation{
 		Name:             high.ProductName(),
 		Slug:             high.URL,
 		Description:      high.ProductDescription(),
 		ShortDescription: high.SubHeading,
 	}
 
+	product.Translations = make(map[string]transfer.Translation)
+	product.Translations[transfer.LocaleEn] = tr
+	product.Translations[transfer.LocaleRu] = tr
+
 	if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok {
-		product.Translations[transfer.LocaleRu] = transfer.Translation{
-			Name:             high.ProductName(),
-			Slug:             high.URL,
-			Description:      item.GetDescription(),
-			ShortDescription: item.GetShortDescription(),
-		}
+		tr.Description = item.GetDescription()
+		tr.ShortDescription = item.GetShortDescription()
+		product.Translations[transfer.LocaleRu] = tr
 	} else {
 		i.logger.Warnf("Can't find translations for product No %s", product.Code)
-		product.Translations[transfer.LocaleRu] = transfer.Translation{
-			Name:             high.ProductName(),
-			Slug:             high.URL,
-			Description:      high.ProductDescription(),
-			ShortDescription: high.SubHeading,
-		}
 	}
 
 	return product
