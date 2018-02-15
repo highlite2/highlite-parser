@@ -3,7 +3,6 @@ package imprt
 import (
 	"context"
 	"fmt"
-	"io"
 	"strings"
 
 	"highlite-parser/internal/cache"
