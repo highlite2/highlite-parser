@@ -98,7 +98,7 @@ func castInterfaceToTaxon(data interface{}) (*transfer.Taxon, error) {
 func (i *CategoryImport) createNewTaxonFromHighliteCategory(cat *highlite.Category) transfer.TaxonNew {
 	taxon := transfer.TaxonNew{
 		Code: cat.GetCode(),
-		Translations: map[string]transfer.Translation{ // TODO take info from available locales from config
+		Translations: map[string]transfer.Translation{
 			transfer.LocaleEn: {
 				Name: cat.Name,
 				Slug: cat.GetURL(),

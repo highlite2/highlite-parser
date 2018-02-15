@@ -45,7 +45,7 @@ func (w *Worker) start() {
 				return
 			}
 
-			job.Do() // TODO add error handling anr retry policy
+			job.Do() // TODO add error handling and retry policy
 
 		case <-w.quit:
 			return

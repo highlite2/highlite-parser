@@ -24,7 +24,7 @@ func (c *Client) requestPatch(ctx context.Context, url string, body interface{})
 	return c.request(ctx, methodPatch, url, nil, body)
 }
 
-// TODO
+// Creates a request with auth token.
 func (c *Client) getRequestWithToken(ctx context.Context) (*resty.Request, error) {
 	token, err := c.getToken()
 	if err != nil {
@@ -36,7 +36,7 @@ func (c *Client) getRequestWithToken(ctx context.Context) (*resty.Request, error
 	return request, nil
 }
 
-// TODO
+// Executes request depending on a method type.
 func (c *Client) executeRequestWithMethod(request *resty.Request, method string, url string) (*resty.Response, error) {
 	switch method {
 	case methodGet:
@@ -52,7 +52,7 @@ func (c *Client) executeRequestWithMethod(request *resty.Request, method string,
 	return nil, fmt.Errorf("unknown method")
 }
 
-// TODO
+// Checks response status.
 func (c *Client) checkResponseStatus(response *resty.Response) error {
 	switch response.StatusCode() {
 	case http.StatusOK, http.StatusCreated, http.StatusNoContent:

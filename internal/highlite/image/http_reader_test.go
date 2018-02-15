@@ -9,7 +9,7 @@ import (
 	_ "github.com/stretchr/testify/assert"
 )
 
-// TODO
+// TODO write test for image downloading
 func TestDownloadImages(t *testing.T) {
 	// arrange
 	//p := HTTPProvider{}
