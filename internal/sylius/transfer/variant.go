@@ -1,6 +1,8 @@
 package transfer
 
-import "reflect"
+import (
+	"highlite-parser/internal/math"
+)
 
 // VariantEntire is a representation of a product variant in Sylius.
 type VariantEntire struct {
@@ -20,12 +22,36 @@ func VariantsEqual(e VariantEntire, v Variant) bool {
 		return false
 	}
 
-	if !reflect.DeepEqual(e.Translations, v.Translations) {
+	// checking translations
+	if len(e.Translations) != len(v.Translations) {
 		return false
 	}
 
-	if !reflect.DeepEqual(e.ChannelPrices, v.ChannelPrices) {
+	for key, etr := range e.Translations {
+		vtr := v.Translations[key]
+		if etr.Name != vtr.Name {
+			return false
+		}
+		if etr.ShortDescription != vtr.ShortDescription {
+			return false
+		}
+		if etr.Slug != vtr.Slug {
+			return false
+		}
+		if etr.Description != vtr.Description {
+			return false
+		}
+	}
+
+	if len(e.ChannelPrices) != len(v.ChannelPrices) {
 		return false
+	}
+
+	for key, price1 := range e.ChannelPrices {
+		price2 := v.ChannelPrices[key]
+		if int(price1.Price) != int(math.Round(price2.Price*100)) {
+			return false
+		}
 	}
 
 	return true

@@ -2,7 +2,6 @@ package transfer
 
 import (
 	"encoding/json"
-	"reflect"
 	"strings"
 )
 
@@ -107,8 +106,24 @@ func ProductsEqual(e ProductEntire, p Product) bool {
 	}
 
 	// checking translations
-	if !reflect.DeepEqual(e.Translations, p.Translations) {
+	if len(e.Translations) != len(p.Translations) {
 		return false
+	}
+
+	for key, etr := range e.Translations {
+		ptr := p.Translations[key]
+		if etr.Name != ptr.Name {
+			return false
+		}
+		if etr.ShortDescription != ptr.ShortDescription {
+			return false
+		}
+		if etr.Slug != ptr.Slug {
+			return false
+		}
+		if etr.Description != ptr.Description {
+			return false
+		}
 	}
 
 	// checking channels

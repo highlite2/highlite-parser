@@ -54,7 +54,8 @@ func main() {
 	}
 
 	memo := cache.NewMemo()
-	productImport := imprt.NewProductImport(syliusClient, memo, logger, dictionary, image.HTTPProvider{})
+	categoryImport := imprt.NewCategoryImport(syliusClient, memo, logger)
+	productImport := imprt.NewProductImport(syliusClient, categoryImport, logger, dictionary, image.HTTPProvider{})
 
 	var itemsReader io.Reader
 	// TODO refactor logic of reader creating

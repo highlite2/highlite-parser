@@ -10,7 +10,14 @@ import (
 func TestVariantsEqual(t *testing.T) {
 	for i, test := range testVariantsEqualCases {
 		// arrange
-		filter := test.filter(Variant{VariantEntire: getVariantMock()})
+		variant := Variant{VariantEntire: getVariantMock()}
+		variant.ChannelPrices = map[string]ChannelPrice{
+			"default": {
+				Price: 1001 / 100.,
+			},
+		}
+
+		filter := test.filter(variant)
 
 		// act
 		// assert
@@ -123,7 +130,7 @@ func getVariantMock() VariantEntire {
 		},
 		ChannelPrices: map[string]ChannelPrice{
 			"default": {
-				Price: 100.,
+				Price: 1001,
 			},
 		},
 	}

@@ -8,13 +8,21 @@ import (
 
 const highliteImageLocation = "http://www.highlite.nl/var/StorageHighlite/ProduktBilder/"
 
-// Bucket is an image readers map.
-type Bucket map[string]io.ReadCloser
+// Bucket is a collection of readers.
+type Bucket []BucketItem
 
-// Close image readers.
+// BucketItem is an image reader.
+type BucketItem struct {
+	Name   string
+	Reader io.Reader
+}
+
+// Close closes image readers reader implements io.Close interface.
 func (b Bucket) Close() {
-	for _, reader := range b {
-		reader.Close()
+	for _, item := range b {
+		if closer, ok := item.Reader.(io.Closer); ok {
+			closer.Close()
+		}
 	}
 }
 

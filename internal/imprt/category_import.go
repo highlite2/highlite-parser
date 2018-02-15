@@ -11,6 +11,11 @@ import (
 	"highlite-parser/internal/sylius/transfer"
 )
 
+// ICategoryImport imports imports a category.
+type ICategoryImport interface {
+	Import(ctx context.Context, category *highlite.Category) (*transfer.Taxon, error)
+}
+
 // NewCategoryImport creates new CategoryImport.
 func NewCategoryImport(client sylius.IClient, memo cache.IMemo, logger log.ILogger) *CategoryImport {
 	return &CategoryImport{
@@ -27,7 +32,7 @@ type CategoryImport struct {
 	logger log.ILogger
 }
 
-// Import imports a categoryImport. First tries to check if the categoryImport exists. If it doesn't, makes
+// Import imports a category. First tries to check if the categoryImport exists. If it doesn't, makes
 // a recursive call to import a parent categoryImport (if there is a link to parent categoryImport). After
 // parent categoryImport is imported (actually it could be cached already) - it creates the current
 // categoryImport.

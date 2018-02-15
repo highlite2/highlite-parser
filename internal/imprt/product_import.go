@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"highlite-parser/internal/cache"
 	"highlite-parser/internal/highlite"
 	"highlite-parser/internal/highlite/image"
 	"highlite-parser/internal/highlite/translation"
@@ -21,13 +20,13 @@ type IProductImport interface {
 }
 
 // NewProductImport creates new ProductImport.
-func NewProductImport(client sylius.IClient, memo cache.IMemo,
+func NewProductImport(client sylius.IClient, categoryImport ICategoryImport,
 	logger log.ILogger, dictionary translation.IDictionary, imageProvider image.IProvider) *ProductImport {
 	return &ProductImport{
 		logger:         logger,
 		channelName:    "default", // TODO take it from config
 		client:         client,
-		categoryImport: NewCategoryImport(client, memo, logger),
+		categoryImport: categoryImport,
 		dictionary:     dictionary,
 		imageProvider:  imageProvider,
 	}
@@ -38,7 +37,7 @@ type ProductImport struct {
 	logger         log.ILogger
 	channelName    string
 	client         sylius.IClient
-	categoryImport *CategoryImport
+	categoryImport ICategoryImport
 	dictionary     translation.IDictionary
 	imageProvider  image.IProvider
 }
@@ -86,6 +85,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfer.ProductEntire, high highlite.Product) error {
 	productNew := i.getProductFromHighlite(high)
 	if !transfer.ProductsEqual(productEntire, productNew) {
+		i.logger.Infof("Updating product %s", productEntire.Code)
 		if err := i.client.UpdateProduct(ctx, productNew); err != nil {
 			return fmt.Errorf("updateProduct: client UpdateProduct returned error: %s", err)
 		}
@@ -101,6 +101,7 @@ func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfe
 			return fmt.Errorf("updateProduct: client CreateProductVariant returned error: %s", err)
 		}
 	} else if !transfer.VariantsEqual(*variantEntire, variantNew) {
+		i.logger.Infof("Updating variant %s", getProductMainVariantCode(productEntire.Code))
 		if err := i.client.UpdateProductVariant(ctx, productEntire.Code, variantNew); err != nil {
 			return fmt.Errorf("updateProduct: client UpdateProductVariant returned error: %s", err)
 		}
@@ -111,15 +112,15 @@ func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfe
 
 // Creates sylius Variant structure from higlite product structure.
 func (i *ProductImport) getVariantFromHighlite(high highlite.Product) transfer.Variant {
-	variant := transfer.Variant{
+	return transfer.Variant{
 		VariantEntire: transfer.VariantEntire{
 			Code: getProductMainVariantCode(high.Code),
 			Translations: map[string]transfer.Translation{
 				transfer.LocaleEn: {
-					Name: high.Name,
+					Name: strings.Trim(high.Name, "\n "),
 				},
 				transfer.LocaleRu: {
-					Name: high.Name,
+					Name: strings.Trim(high.Name, "\n "),
 				},
 			},
 			ChannelPrices: map[string]transfer.ChannelPrice{
@@ -129,17 +130,15 @@ func (i *ProductImport) getVariantFromHighlite(high highlite.Product) transfer.V
 			},
 		},
 	}
-
-	return variant
 }
 
 // Creates sylius Product structure from higlite product structure.
 func (i *ProductImport) getProductFromHighlite(high highlite.Product) transfer.Product {
 	tr := transfer.Translation{
-		Name:             high.ProductName(),
+		Name:             strings.Trim(high.ProductName(), "\n "),
 		Slug:             high.URL,
-		Description:      high.ProductDescription(),
-		ShortDescription: high.SubHeading,
+		Description:      strings.Trim(high.ProductDescription(), "\n "),
+		ShortDescription: strings.Trim(high.SubHeading, "\n "),
 	}
 
 	product := transfer.Product{
@@ -165,8 +164,8 @@ func (i *ProductImport) getProductFromHighlite(high highlite.Product) transfer.P
 	}
 
 	if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok {
-		tr.Description = item.GetDescription()
-		tr.ShortDescription = item.GetShortDescription()
+		tr.Description = strings.Trim(item.GetDescription(), "\n ")
+		tr.ShortDescription = strings.Trim(item.GetShortDescription(), "\n ")
 		product.Translations[transfer.LocaleRu] = tr
 	} else {
 		i.logger.Warnf("Can't find translations for product No %s", product.Code)
@@ -181,27 +180,22 @@ func getProductMainVariantCode(productCode string) string {
 }
 
 // Prepares image structure to pass it to sylius API.
-func prepareImages(high highlite.Product, product *transfer.Product, readers image.Bucket) []transfer.ImageUpload {
+func prepareImages(high highlite.Product, product *transfer.Product, bucket image.Bucket) []transfer.ImageUpload {
 	var images []transfer.ImageUpload
 
-	if len(readers) > 0 {
-		product.Images = make([]transfer.Image, len(readers))
-		images = make([]transfer.ImageUpload, len(readers))
+	if len(bucket) > 0 {
+		product.Images = make([]transfer.Image, len(bucket))
+		images = make([]transfer.ImageUpload, len(bucket))
 
-		i := 0
-		for name, reader := range readers {
-			if name == high.Images[0] {
-				product.Images[i] = transfer.Image{
-					Type: "main",
-				}
+		for i, item := range bucket {
+			if item.Name == high.Images[0] {
+				product.Images[i] = transfer.Image{Type: "main"}
 			}
 
 			images[i] = transfer.ImageUpload{
-				Name:   name,
-				Reader: reader,
+				Name:   item.Name,
+				Reader: item.Reader,
 			}
-
-			i++
 		}
 	}
 

@@ -37,8 +37,11 @@ type ProductCSV struct {
 // GetDescription returns a product description.
 func (t *ProductCSV) GetDescription() string {
 	description := ""
-	description += t.USP
-	description += "\n"
+	if t.USP != "" {
+		description += t.USP
+		description += "\n"
+	}
+
 	description += t.MainText
 	description += "\n\n"
 	description += t.TechSpec

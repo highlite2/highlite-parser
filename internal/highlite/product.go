@@ -77,10 +77,6 @@ type Product struct {
 	Status  string
 
 	Country string
-	Weight  float64
-	Length  float64
-	Width   float64
-	Height  float64
 	Price   float64
 
 	CategoryRoot *Category
@@ -93,8 +89,7 @@ type Product struct {
 
 // ProductDescription combines description and specs and removes html entities.
 func (p Product) ProductDescription() string {
-	description := ""
-	description += replaceHTMLEntities(p.Description)
+	description := replaceHTMLEntities(p.Description)
 	description += "\n\n"
 	description += replaceHTMLEntities(p.Specs)
 
@@ -130,10 +125,6 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 		Status:  mapper.GetString(titleStatus, values),
 
 		Country: mapper.GetString(titleCountryOfOrigin, values),
-		Weight:  mapper.GetFloat(titleWeight, values),
-		Length:  mapper.GetFloat(titleLength, values),
-		Width:   mapper.GetFloat(titleWidth, values),
-		Height:  mapper.GetFloat(titleHeight, values),
 		Price:   mapper.GetFloat(titleUnitPrice, values),
 
 		CategoryRoot: cat0,

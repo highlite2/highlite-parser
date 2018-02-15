@@ -25,7 +25,7 @@ type httpReader struct {
 	readyChan chan bool
 	errorChan chan error
 
-	imageReaders map[string]io.ReadCloser
+	imageReaders Bucket
 }
 
 // Initialization.
@@ -42,7 +42,7 @@ func (hi *httpReader) init(
 	hi.readyChan = make(chan bool)
 	hi.errorChan = make(chan error, len(imageNames))
 
-	hi.imageReaders = make(map[string]io.ReadCloser)
+	hi.imageReaders = make(Bucket, 0, len(imageNames))
 }
 
 // Single download job. Gets an image from the internet and writes the result to the result channel.
@@ -74,7 +74,10 @@ func (hi *httpReader) downloadObserver() {
 		if download.err != nil {
 			hi.errorChan <- download.err
 		} else {
-			hi.imageReaders[download.name] = download.reader
+			hi.imageReaders = append(hi.imageReaders, BucketItem{
+				Name:   download.name,
+				Reader: download.reader,
+			})
 		}
 	}
 
@@ -86,9 +89,7 @@ func (hi *httpReader) downloadObserver() {
 func (hi *httpReader) recoverAfterError() {
 	<-hi.readyChan
 	hi.cleanup()
-	for _, reader := range hi.imageReaders {
-		reader.Close()
-	}
+	hi.imageReaders.Close()
 }
 
 // Closes channels.
@@ -99,7 +100,7 @@ func (hi *httpReader) cleanup() {
 }
 
 // Downloads all images in parallel. Closes all image readers if context exceeded or if there is any error.
-func (hi *httpReader) downloadImages(ctx context.Context) (map[string]io.ReadCloser, error) {
+func (hi *httpReader) downloadImages(ctx context.Context) (Bucket, error) {
 	for _, name := range hi.imageNames {
 		go hi.downloadImage(name)
 	}
