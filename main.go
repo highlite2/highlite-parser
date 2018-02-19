@@ -2,92 +2,33 @@ package main
 
 import (
 	"context"
-	"io"
-	"os"
-	"time"
+	"fmt"
+	"flag"
 
 	"highlite-parser/internal"
-	"highlite-parser/internal/cache"
-	"highlite-parser/internal/highlite"
-	"highlite-parser/internal/highlite/image"
-	"highlite-parser/internal/highlite/translation"
-	"highlite-parser/internal/imprt"
+	"highlite-parser/internal/action"
 	"highlite-parser/internal/log"
-	"highlite-parser/internal/queue"
-	"highlite-parser/internal/sylius"
-	"highlite-parser/internal/sylius/transfer"
-
-	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/transform"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Hour*3)
-	defer cancel()
-
+	ctx := context.Background()
 	config := internal.GetConfigFromFile("config/config.toml")
-
 	logger := log.GetDefaultLog(config.LogLevel)
-	defer timeTrack(logger, time.Now(), "Import")
 
-	highClient := highlite.NewClient(
-		logger,
-		config.Highlite.Login,
-		config.Highlite.Password,
-		config.Highlite.LoginEndpoint,
-		config.Highlite.ItemsEndpoint,
-	)
+	act := flag.String("action", "", "Command")
+	flag.Parse()
 
-	syliusClient := sylius.NewClient(logger, config.Sylius.APIEndpoint, sylius.Auth{
-		ClientID:     config.Sylius.ClientID,
-		ClientSecret: config.Sylius.ClientSecret,
-		Username:     config.Sylius.Username,
-		Password:     config.Sylius.Password,
-	})
-
-	dictionary := translation.NewMemoryDictionary()
-	if err := translation.FillMemoryDictionaryFromCSV(dictionary, transfer.LocaleRu,
-		config.TranslationsFilePath, translation.GetRussianTranslationsCSVTitles()); err != nil {
-		logger.Errorf("Can't fill dictionary: %s", err.Error())
-
-		return
-	}
-
-	memo := cache.NewMemo()
-	categoryImport := imprt.NewCategoryImport(syliusClient, memo, logger)
-	productImport := imprt.NewProductImport(syliusClient, categoryImport, logger, dictionary, image.HTTPProvider{})
-
-	var itemsReader io.Reader
-	// TODO refactor logic of reader creating
-	if config.ItemsFilePath == "" {
-		if reader, err := highClient.GetItemsReader(ctx); err != nil {
-			logger.Errorf("Can't get highlite items reader: %s", err.Error())
-		} else {
-			itemsReader = reader
+	switch *act {
+	case "import":
+		act := &action.HighliteImport{}
+		act.Do(ctx, config, logger)
+	case "tr":
+		act := &action.CategoryTranslationTemplate{}
+		err := act.Do(ctx, config, logger)
+		if err != nil {
+			logger.Error(err.Error())
 		}
-	} else {
-		if file, err := os.Open(config.ItemsFilePath); err != nil {
-			logger.Errorf("Can't open file for reading items: %s", err.Error())
-		} else {
-			defer file.Close()
-			itemsReader = transform.NewReader(file, charmap.Windows1257.NewDecoder())
-		}
+	default:
+		fmt.Println("Please, specify a valid command.")
 	}
-
-	jobPool := queue.NewPool(10)
-
-	if itemsReader != nil {
-		processor := imprt.NewProcessor(logger, jobPool, productImport, itemsReader)
-		processor.Update(ctx)
-	} else {
-		logger.Error("Items reader is empty")
-	}
-
-	<-jobPool.Stop()
-}
-
-// Time logging
-func timeTrack(logger log.ILogger, start time.Time, name string) {
-	elapsed := time.Since(start)
-	logger.Infof("[%s] took %s", name, elapsed)
 }
