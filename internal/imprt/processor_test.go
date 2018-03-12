@@ -9,9 +9,9 @@ import (
 	"sync"
 	"testing"
 
-	"highlite-parser/internal/highlite"
-	"highlite-parser/internal/queue"
-	"highlite-parser/internal/test/mocks"
+	"highlite2-import/internal/highlite"
+	"highlite2-import/internal/queue"
+	"highlite2-import/internal/test/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

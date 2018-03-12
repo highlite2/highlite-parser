@@ -1,4 +1,4 @@
-package: highlite-parser
+package: highlite2-import
 import:
 - package: github.com/go-resty/resty
   version: ^1.0.0

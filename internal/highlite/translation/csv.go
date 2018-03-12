@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"highlite-parser/internal/csv"
+	"highlite2-import/internal/csv"
 )
 
 const (

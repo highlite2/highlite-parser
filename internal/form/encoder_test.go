@@ -3,7 +3,7 @@ package form
 import (
 	"testing"
 
-	"highlite-parser/internal/sylius/transfer"
+	"highlite2-import/internal/sylius/transfer"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -6,17 +6,16 @@ import (
 	"os"
 	"strings"
 
-	"highlite-parser/internal"
-	"highlite-parser/internal/csv"
-	"highlite-parser/internal/highlite"
-	"highlite-parser/internal/log"
+	"highlite2-import/internal"
+	"highlite2-import/internal/csv"
+	"highlite2-import/internal/highlite"
+	"highlite2-import/internal/log"
 
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 )
 
-type CategoryTranslationTemplate struct{
-
+type CategoryTranslationTemplate struct {
 }
 
 func (c *CategoryTranslationTemplate) Do(ctx context.Context, config internal.Config, logger log.ILogger) error {

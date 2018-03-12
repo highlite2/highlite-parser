@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"highlite-parser/internal/log"
-	"highlite-parser/internal/sylius/transfer"
+	"highlite2-import/internal/log"
+	"highlite2-import/internal/sylius/transfer"
 )
 
 const (

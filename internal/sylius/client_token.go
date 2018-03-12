@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-resty/resty"
 
-	"highlite-parser/internal/sylius/transfer"
+	"highlite2-import/internal/sylius/transfer"
 )
 
 // Gets a token.

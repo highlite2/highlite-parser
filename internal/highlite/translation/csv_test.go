@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"highlite-parser/internal/csv"
+	"highlite2-import/internal/csv"
 
 	"github.com/stretchr/testify/assert"
 )

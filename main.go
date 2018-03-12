@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"flag"
+	"fmt"
 
-	"highlite-parser/internal"
-	"highlite-parser/internal/action"
-	"highlite-parser/internal/log"
+	"highlite2-import/internal"
+	"highlite2-import/internal/action"
+	"highlite2-import/internal/log"
 )
 
 func main() {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"highlite-parser/internal/form"
-	"highlite-parser/internal/sylius/transfer"
+	"highlite2-import/internal/form"
+	"highlite2-import/internal/sylius/transfer"
 )
 
 // GetTaxon gets a category by code.

@@ -1,12 +1,12 @@
 package test
 
 import (
-	"highlite-parser/internal/cache"
-	"highlite-parser/internal/highlite/image"
-	"highlite-parser/internal/highlite/translation"
-	"highlite-parser/internal/imprt"
-	"highlite-parser/internal/log"
-	"highlite-parser/internal/sylius"
+	"highlite2-import/internal/cache"
+	"highlite2-import/internal/highlite/image"
+	"highlite2-import/internal/highlite/translation"
+	"highlite2-import/internal/imprt"
+	"highlite2-import/internal/log"
+	"highlite2-import/internal/sylius"
 )
 
 // Logger ...

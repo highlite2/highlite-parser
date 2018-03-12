@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"highlite-parser/internal/highlite"
-	"highlite-parser/internal/highlite/image"
-	"highlite-parser/internal/highlite/translation"
-	"highlite-parser/internal/log"
-	"highlite-parser/internal/sylius"
-	"highlite-parser/internal/sylius/transfer"
+	"highlite2-import/internal/highlite"
+	"highlite2-import/internal/highlite/image"
+	"highlite2-import/internal/highlite/translation"
+	"highlite2-import/internal/log"
+	"highlite2-import/internal/sylius"
+	"highlite2-import/internal/sylius/transfer"
 )
 
 // IProductImport imports highlite product into sylius.

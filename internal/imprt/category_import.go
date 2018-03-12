@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"highlite-parser/internal/cache"
-	"highlite-parser/internal/highlite"
-	"highlite-parser/internal/log"
-	"highlite-parser/internal/sylius"
-	"highlite-parser/internal/sylius/transfer"
+	"highlite2-import/internal/cache"
+	"highlite2-import/internal/highlite"
+	"highlite2-import/internal/log"
+	"highlite2-import/internal/sylius"
+	"highlite2-import/internal/sylius/transfer"
 )
 
 // ICategoryImport imports imports a category.

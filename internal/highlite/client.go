@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"highlite-parser/internal/log"
+	"highlite2-import/internal/log"
 
 	"github.com/go-resty/resty"
 	"golang.org/x/text/encoding/charmap"

@@ -1,7 +1,7 @@
 package transfer
 
 import (
-	"highlite-parser/internal/math"
+	"highlite2-import/internal/math"
 )
 
 // VariantEntire is a representation of a product variant in Sylius.

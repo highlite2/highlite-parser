@@ -4,10 +4,10 @@ import (
 	"context"
 	"io"
 
-	"highlite-parser/internal/csv"
-	"highlite-parser/internal/highlite"
-	"highlite-parser/internal/log"
-	"highlite-parser/internal/queue"
+	"highlite2-import/internal/csv"
+	"highlite2-import/internal/highlite"
+	"highlite2-import/internal/log"
+	"highlite2-import/internal/queue"
 )
 
 // NewProcessor creates an Processor instance.

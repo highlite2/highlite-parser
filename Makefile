@@ -26,7 +26,7 @@ test:
 .PHONY: check
 check:
 	${INFO} "Running goimports..."
-	@ goimports -w -local highlite-parser $(GOFILES)
+	@ goimports -w -local highlite2-import $(GOFILES)
 
 	${INFO} "Running go vet..."
 	@ go vet ${GOPACKAGES}
