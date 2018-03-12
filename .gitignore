@@ -1,2 +1,9 @@
-# IntelliJ project files
 .idea
+.DS_Store
+vendor/
+_tmp/
+
+config/*
+!config/_config.toml
+
+internal/test/mocks/

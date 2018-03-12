@@ -1,0 +1,12 @@
+php bin/console sylius:install:database
+
+php bin/console sylius:install:setup
+
+php bin/console sylius:user:promote
+> ROLE_API_ACCESS
+
+php bin/console sylius:oauth-server:create-client \
+    --grant-type="password" \
+    --grant-type="refresh_token" \
+    --grant-type="token"
+

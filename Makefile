@@ -1,8 +1,41 @@
+GOPACKAGES ?= $(shell go list ./... | grep -v /vendor/)
+GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+
+.PHONY: install-tools
+install-tools:
+	${INFO} "Installing tools for development..."
+	@ go get -u github.com/golang/lint/golint
+	@ go get -u golang.org/x/tools/cmd/goimports
 
 .PHONY: deps
 deps:
-	${INFO} "Installing dependencies"
+	${INFO} "Installing dependencies..."
 	@ glide install
+
+.PHONY: gen
+gen:
+	${INFO} "Generating mocks..."
+	@ cd vendor/github.com/vektra/mockery/cmd/mockery/ && go install ./...
+	@ go generate ${GOPACKAGES}
+
+.PHONY: test
+test:
+	${INFO} "Running tests..."
+	@ go test -v ${GOPACKAGES}
+
+.PHONY: check
+check:
+	${INFO} "Running goimports..."
+	@ goimports -w -local highlite2-import $(GOFILES)
+
+	${INFO} "Running go vet..."
+	@ go vet ${GOPACKAGES}
+
+	${INFO} "Running gohint..."
+	@ golint ${GOPACKAGES}
+
+	${INFO} "DONE"
+
 
 # ======================================================================================================================
 # COMMON FUNCTIONS
