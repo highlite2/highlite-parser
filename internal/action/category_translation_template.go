@@ -10,24 +10,31 @@ import (
 	"highlite2-import/internal/csv"
 	"highlite2-import/internal/highlite"
 	"highlite2-import/internal/log"
-
-	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/transform"
 )
 
+// CategoryTranslationTemplate ... TODO this is deprecated action: need to use Sylius taxon API to generate template
 type CategoryTranslationTemplate struct {
 }
 
+// Do ...
 func (c *CategoryTranslationTemplate) Do(ctx context.Context, config internal.Config, logger log.ILogger) error {
 	outputFileName := "categories.csv"
 
-	file, err := os.Open(config.ItemsFilePath)
-	if err != nil {
-		return fmt.Errorf("can't open file for reading items: %s", err.Error())
-	}
-	defer file.Close()
+	highClient := highlite.NewClient(
+		logger,
+		config.Highlite.Login,
+		config.Highlite.Password,
+		config.Highlite.LoginEndpoint,
+		config.Highlite.ItemsEndpoint,
+	)
 
-	itemsReader := transform.NewReader(file, charmap.Windows1257.NewDecoder())
+	itemsReader, itemsErr := highClient.GetItemsReader(ctx)
+	if itemsErr != nil {
+		logger.Errorf("Can't get highlite items reader: %s", itemsErr.Error())
+
+		return itemsErr
+	}
+
 	csvParser := csv.NewReader(itemsReader)
 	csvParser.Separator = ';'
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())

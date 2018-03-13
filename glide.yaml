@@ -4,18 +4,9 @@ import:
   version: ^1.0.0
 - package: github.com/apex/log
   version: ^1.0.0
-- package: github.com/pkg/errors
-  version: ^0.8.0
-- package: github.com/go-logfmt/logfmt
-  version: ^0.3.0
 - package: github.com/stretchr/testify
   version: ^1.1.4
 - package: golang.org/x/text
   subpackages:
   - encoding/charmap
   - transform
-- package: github.com/BurntSushi/toml
-  version: ^0.3.0
-- package: github.com/vektra/mockery
-  subpackages:
-  - cmd/mockery

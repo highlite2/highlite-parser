@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+
+  import:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/go/src/highlite2-import

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 
 	"highlite2-import/internal"
 	"highlite2-import/internal/action"
@@ -12,7 +11,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	config := internal.GetConfigFromFile("config/config.toml")
+	config := internal.GetConfigFromEnv()
 	logger := log.GetDefaultLog(config.LogLevel)
 
 	act := flag.String("action", "", "Command")
@@ -20,15 +19,8 @@ func main() {
 
 	switch *act {
 	case "import":
-		act := &action.HighliteImport{}
-		act.Do(ctx, config, logger)
-	case "tr":
-		act := &action.CategoryTranslationTemplate{}
-		err := act.Do(ctx, config, logger)
-		if err != nil {
-			logger.Error(err.Error())
-		}
+		action.Import(ctx, config, logger)
 	default:
-		fmt.Println("Please, specify a valid command.")
+		action.Import(ctx, config, logger)
 	}
 }
