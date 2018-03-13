@@ -60,6 +60,7 @@ func (r *Reader) Values() []string {
 }
 
 // Next reads the next record and returns if the operation was successful.
+// TODO https://en.wikipedia.org/wiki/Byte_order_mark handle BOM in the beginig of the file
 func (r *Reader) Next() bool {
 	if r.parsingErr != nil {
 		return false

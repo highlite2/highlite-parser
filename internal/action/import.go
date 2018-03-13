@@ -14,12 +14,11 @@ import (
 	"highlite2-import/internal/queue"
 	"highlite2-import/internal/sylius"
 	"highlite2-import/internal/sylius/transfer"
-
 )
 
 // Import uploads products
 func Import(ctx context.Context, config internal.Config, logger log.ILogger) {
-	ctx, cancel := context.WithTimeout(ctx, time.Hour*3)
+	ctx, cancel := context.WithTimeout(ctx, config.ImportTimeout)
 	defer cancel()
 
 	defer timeTrack(logger, time.Now(), "Import")

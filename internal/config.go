@@ -1,12 +1,20 @@
 package internal
 
-import "os"
+import (
+	"os"
+	"strconv"
+	"time"
+)
 
 // GetConfigFromEnv creates config instance and makes all initializations.
 func GetConfigFromEnv() Config {
 	var cfg = Config{}
 
 	cfg.TranslationsFilePath = os.Getenv("TRANSLATIONS_FILE_PATH")
+
+	if timeout, err := strconv.Atoi(os.Getenv("IMPORT_TIMEOUT")); err == nil {
+		cfg.ImportTimeout = time.Duration(timeout) * time.Second
+	}
 
 	cfg.LogLevel = os.Getenv("LOG_LEVEL")
 
@@ -27,6 +35,8 @@ func GetConfigFromEnv() Config {
 // Config is an application global config.
 type Config struct {
 	TranslationsFilePath string
+
+	ImportTimeout time.Duration
 
 	LogLevel string
 

@@ -1,9 +1,6 @@
 .idea
 .DS_Store
 vendor/
-_tmp/
-
-config/*
-!config/_config.toml
+dev/config.env
 
 internal/test/mocks/

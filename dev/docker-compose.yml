@@ -8,3 +8,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ../:/go/src/highlite2-import
+    env_file:
+      - config.env
+    network_mode: "host"
+    command: ["go", "run", "main.go"]

@@ -32,3 +32,17 @@ dev-check:
 dev-test:
 	${INFO} "Running tests..."
 	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) run --rm import go test -v $(DEV_GOPACKAGES)
+
+.PHONY: dev-import
+dev-import:
+	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) up --force-recreate -d import
+	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) logs -f import
+
+.PHONY: dev-import-logs
+dev-import-logs:
+	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) logs -f import
+
+# Checking if config exists
+ifeq ("$(wildcard dev/config.env)","")
+  $(error dev/config.env file not found. Run "cp dev/_config.env dev/config.env" and override default values)
+endif
