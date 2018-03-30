@@ -39,3 +39,19 @@ func TestProduct_ProductName(t *testing.T) {
 	assert.Equal(t, "name", product1.ProductName())
 	assert.Equal(t, "brand name", product2.ProductName())
 }
+
+func TestProduct_GetBrandCode(t *testing.T) {
+	testData := []struct{
+		brand string
+		code string
+	} {
+		{"brand 100", "brand-100"},
+		{"bRand!,brand,!@# 100", "brand-brand-100"},
+		{"BRAND2", "brand2"},
+	}
+
+	for _, test := range testData {
+		product := Product{Brand: test.brand}
+		assert.Equal(t, test.code, product.GetBrandCode())
+	}
+}

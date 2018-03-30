@@ -105,6 +105,15 @@ func (p Product) ProductName() string {
 	return p.Brand + " " + p.Name
 }
 
+// GetBrandCode turns brand name into brand code.
+func (p Product) GetBrandCode() string {
+	brand := strings.ToLower(p.Brand)
+	brand = categoryCodeRegExp.ReplaceAllString(brand, " ")
+	fields := strings.Fields(brand)
+
+	return strings.Join(fields, "-")
+}
+
 // GetProductFromCSVImport creates product object from csv import data.
 func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	cat0 := NewCategory("Category", nil)
