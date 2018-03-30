@@ -1,0 +1,42 @@
+{
+  "_links": {
+    "self": {
+      "href": "/api/v1/product-attributes/highlite_brand"
+    }
+  },
+  "code": "highlite_brand",
+  "configuration": {
+    "choices": {
+      "highlite_brand_option_1": {
+        "en_US": "Brand 1",
+        "ru_RU": "Бренд 1"
+      },
+      "highlite_brand_option_2": {
+        "en_US": "Brand 2",
+        "ru_RU": "Бренд 2"
+      },
+      "highlite_brand_option_3": {
+        "en_US": "Brand 3",
+        "ru_RU": "Бренд 3"
+      }
+    },
+    "multiple": false
+  },
+  "createdAt": "2018-03-30T10:02:48+00:00",
+  "id": 2,
+  "position": 0,
+  "translations": {
+    "en_US": {
+      "id": 3,
+      "locale": "en_US",
+      "name": "Brand"
+    },
+    "ru_RU": {
+      "id": 2,
+      "locale": "ru_RU",
+      "name": "\u0411\u0440\u0435\u043d\u0434"
+    }
+  },
+  "type": "select",
+  "updatedAt": "2018-03-30T10:04:13+00:00"
+}

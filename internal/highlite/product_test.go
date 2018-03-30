@@ -41,10 +41,10 @@ func TestProduct_ProductName(t *testing.T) {
 }
 
 func TestProduct_GetBrandCode(t *testing.T) {
-	testData := []struct{
+	testData := []struct {
 		brand string
-		code string
-	} {
+		code  string
+	}{
 		{"brand 100", "brand-100"},
 		{"bRand!,brand,!@# 100", "brand-brand-100"},
 		{"BRAND2", "brand2"},
