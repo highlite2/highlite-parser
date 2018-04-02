@@ -42,6 +42,17 @@ func (c *Client) GetProduct(ctx context.Context, product string) (*transfer.Prod
 	return result, nil
 }
 
+// GetProductAttribute gets a product attribute by code.
+func (c *Client) GetProductAttribute(ctx context.Context, attributeCode string) (*transfer.Attribute, error) {
+	result := &transfer.Attribute{}
+	err := c.requestGet(ctx, c.getURL("/v1/product-attributes/%s", attributeCode), result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // CreateProduct creates a product.
 func (c *Client) CreateProduct(ctx context.Context, product transfer.Product, images []transfer.ImageUpload) (*transfer.ProductEntire, error) {
 	url := c.getURL("/v1/products/")

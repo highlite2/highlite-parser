@@ -36,6 +36,8 @@ type IClient interface {
 	CreateProduct(ctx context.Context, product transfer.Product, images []transfer.ImageUpload) (*transfer.ProductEntire, error)
 	UpdateProduct(ctx context.Context, product transfer.Product) error
 
+	GetProductAttribute(ctx context.Context, attributeCode string) (*transfer.Attribute, error)
+
 	GetProductVariant(ctx context.Context, product string, variant string) (*transfer.VariantEntire, error)
 	CreateProductVariant(ctx context.Context, product string, variant transfer.Variant) (*transfer.VariantEntire, error)
 	UpdateProductVariant(ctx context.Context, product string, variant transfer.Variant) error
