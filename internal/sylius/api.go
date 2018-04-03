@@ -56,7 +56,7 @@ func (c *Client) GetProductAttribute(ctx context.Context, code string) (*transfe
 // CreateProductAttribute creates an attribute with specified type.
 func (c *Client) CreateProductAttribute(ctx context.Context, attributeType transfer.AttributeType, attribute transfer.Attribute) (*transfer.Attribute, error) {
 	result := &transfer.Attribute{}
-	err := c.requestPost(ctx, c.getURL("/v1/products-attributes/%s", attributeType), result, attribute)
+	err := c.requestPost(ctx, c.getURL("/v1/product-attributes/%s", attributeType), result, attribute)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c *Client) CreateProductAttribute(ctx context.Context, attributeType trans
 
 // UpdateProductAttribute updates a product attribute.
 func (c *Client) UpdateProductAttribute(ctx context.Context, attribute transfer.Attribute) error {
-	return c.requestPatch(ctx, c.getURL("/v1/products-attributes/%s", attribute.Code), attribute)
+	return c.requestPatch(ctx, c.getURL("/v1/product-attributes/%s", attribute.Code), attribute)
 }
 
 // CreateProduct creates a product.

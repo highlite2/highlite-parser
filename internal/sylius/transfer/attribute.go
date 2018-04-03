@@ -1,5 +1,7 @@
 package transfer
 
+import "encoding/json"
+
 // AttributeType is an attribute type.
 type AttributeType string
 
@@ -22,3 +24,25 @@ type AttributeConfiguration struct {
 
 // AttributeConfigurationChoice is a select attribute choice.
 type AttributeConfigurationChoice map[string]string
+
+// This struct helps to unmarshal json. Sylius api returns different
+// representation for Choices: if there are no choices, Sylius returns
+// an empty array, if not empty - an object.
+type attributeConfigurationRaw struct {
+	Choices json.RawMessage `json:"choices"`
+}
+
+// UnmarshalJSON helps to fix inconsistency in sylius api response.
+func (t *AttributeConfiguration) UnmarshalJSON(value []byte) error {
+	raw := &attributeConfigurationRaw{}
+	if err := json.Unmarshal(value, raw); err != nil {
+		return err
+	}
+
+	var ch map[string]AttributeConfigurationChoice
+	if err := json.Unmarshal(raw.Choices, &ch); err == nil {
+		t.Choices = ch
+	}
+
+	return nil
+}

@@ -21,7 +21,8 @@ type IProductImport interface {
 
 // NewProductImport creates new ProductImport.
 func NewProductImport(client sylius.IClient, categoryImport ICategoryImport,
-	logger log.ILogger, dictionary translation.IDictionary, imageProvider image.IProvider) *ProductImport {
+	logger log.ILogger, dictionary translation.IDictionary, imageProvider image.IProvider,
+	attrImport IAttributesImport) *ProductImport {
 	return &ProductImport{
 		logger:         logger,
 		channelName:    "default", // TODO take it from config
@@ -29,6 +30,7 @@ func NewProductImport(client sylius.IClient, categoryImport ICategoryImport,
 		categoryImport: categoryImport,
 		dictionary:     dictionary,
 		imageProvider:  imageProvider,
+		attrImport:     attrImport,
 	}
 }
 
@@ -40,10 +42,15 @@ type ProductImport struct {
 	categoryImport ICategoryImport
 	dictionary     translation.IDictionary
 	imageProvider  image.IProvider
+	attrImport     IAttributesImport
 }
 
 // Import imports highlite product into sylius.
 func (i *ProductImport) Import(ctx context.Context, high highlite.Product) error {
+	if _, err := i.attrImport.GetBrandAttributeChoiceCode(ctx, high); err != nil {
+		return fmt.Errorf("import: GetBrandAttributeChoiceCode error: %s", err)
+	}
+
 	if product, err := i.client.GetProduct(ctx, high.Code); err == nil {
 		return i.updateProduct(ctx, *product, high)
 	} else if err == sylius.ErrNotFound {

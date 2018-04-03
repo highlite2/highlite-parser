@@ -98,6 +98,10 @@ func (i *AttributesImport) addAttributeBrandChoiceCode(ctx context.Context, high
 		return nil
 	}
 
+	if len(i.attrBrand.Configuration.Choices) == 0 {
+		i.attrBrand.Configuration.Choices = make(map[string]transfer.AttributeConfigurationChoice)
+	}
+
 	i.attrBrand.Configuration.Choices[high.GetBrandCode()] = transfer.AttributeConfigurationChoice{
 		transfer.LocaleRu: high.Brand,
 		transfer.LocaleEn: high.Brand,

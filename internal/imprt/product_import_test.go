@@ -42,8 +42,11 @@ func TestCreateProduct(t *testing.T) {
 	imgProvider := &mocks.ImageProvider{}
 	imgProvider.On("GetImages", mock.Anything, high.Images).Once().Return(getImageBucketMock(high.Images), nil)
 
+	attrImport := &mocks.AttributesImport{}
+	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
+
 	// act
-	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider)
+	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
 	err := im.Import(context.Background(), high)
 
 	// assert
@@ -70,8 +73,11 @@ func TestUpdateProduct_NoUpdates(t *testing.T) {
 
 	imgProvider := &mocks.ImageProvider{}
 
+	attrImport := &mocks.AttributesImport{}
+	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
+
 	// act
-	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider)
+	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
 	err := im.Import(context.Background(), high)
 
 	// assert
@@ -104,8 +110,11 @@ func TestUpdateProduct_ProductUpdate(t *testing.T) {
 	dictionary.On("Get", transfer.LocaleRu, high.No).Once().Return(&highTranslate, true)
 	imgProvider := &mocks.ImageProvider{}
 
+	attrImport := &mocks.AttributesImport{}
+	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
+
 	// act
-	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider)
+	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
 	err := im.Import(context.Background(), high)
 
 	// assert
@@ -138,8 +147,11 @@ func TestUpdateProduct_VariantUpdate(t *testing.T) {
 	dictionary.On("Get", transfer.LocaleRu, high.No).Once().Return(&highTranslate, true)
 	imgProvider := &mocks.ImageProvider{}
 
+	attrImport := &mocks.AttributesImport{}
+	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
+
 	// act
-	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider)
+	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
 	err := im.Import(context.Background(), high)
 
 	// assert

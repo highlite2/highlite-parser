@@ -50,3 +50,9 @@ type ImageProvider interface {
 type CategoryImport interface {
 	imprt.ICategoryImport
 }
+
+// AttributesImport ...
+//go:generate mockery -name AttributesImport
+type AttributesImport interface {
+	imprt.IAttributesImport
+}

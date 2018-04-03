@@ -46,9 +46,17 @@ func Import(ctx context.Context, config internal.Config, logger log.ILogger) {
 		return
 	}
 
+	attrImport := imprt.NewAttributesImport(syliusClient, logger)
+	if err := attrImport.Init(ctx); err != nil {
+		logger.Errorf("Can't prepare attributes: %s", err)
+
+		return
+	}
+
 	memo := cache.NewMemo()
 	categoryImport := imprt.NewCategoryImport(syliusClient, memo, logger)
-	productImport := imprt.NewProductImport(syliusClient, categoryImport, logger, dictionary, image.HTTPProvider{})
+	productImport := imprt.NewProductImport(syliusClient, categoryImport,
+		logger, dictionary, image.HTTPProvider{}, attrImport)
 
 	itemsReader, itemsErr := highClient.GetItemsReader(ctx)
 	if itemsErr != nil {
