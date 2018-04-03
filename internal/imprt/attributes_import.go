@@ -1,51 +1,114 @@
 package imprt
 
 import (
+	"context"
+	"fmt"
 	"sync"
 
-	"strings"
-
-	"highlite2-import/internal/cache"
 	"highlite2-import/internal/highlite"
 	"highlite2-import/internal/log"
 	"highlite2-import/internal/sylius"
+	"highlite2-import/internal/sylius/transfer"
 )
+
+const attributeBrandCode = "highlite-brand"
 
 // IAttributesImport is a Sylius attributes importer.
 type IAttributesImport interface {
-	GetBrandID(high highlite.Product) (string, bool)
-	//AddBrand(ctx context.Context, high highlite.Product) error
+	GetBrandAttributeChoiceCode(ctx context.Context, high highlite.Product) (string, error)
 }
 
 // NewAttributesImport creates new Sylius attributes importer.
-func NewAttributesImport(client sylius.IClient, memo cache.IMemo, logger log.ILogger) *AttributesImport {
+func NewAttributesImport(client sylius.IClient, logger log.ILogger) *AttributesImport {
 	return &AttributesImport{
-		logger:   logger,
-		client:   client,
-		memo:     memo,
-		lock:     sync.RWMutex{},
-		brandMap: make(map[string]string),
+		logger:        logger,
+		client:        client,
+		attrBrandLock: sync.RWMutex{},
 	}
 }
 
 // AttributesImport is a Sylius attributes importer implementation.
 type AttributesImport struct {
-	logger   log.ILogger
-	client   sylius.IClient
-	memo     cache.IMemo
-	lock     sync.RWMutex
-	brandMap map[string]string
+	logger        log.ILogger
+	client        sylius.IClient
+	attrBrand     *transfer.Attribute
+	attrBrandLock sync.RWMutex
 }
 
-// GetBrandID gets brand ID
-func (i *AttributesImport) GetBrandID(high highlite.Product) (string, bool) {
-	i.lock.RLock()
-	defer i.lock.RUnlock()
+// Init initializes actual for import attributes.
+func (i *AttributesImport) Init(ctx context.Context) error {
+	return i.initBrandAttribute(ctx)
+}
 
-	brand := strings.ToLower(high.Brand)
-	if id, ok := i.brandMap[brand]; ok {
-		return id, true
+// Initializes brand attribute.
+func (i *AttributesImport) initBrandAttribute(ctx context.Context) error {
+	var err error
+
+	i.attrBrand, err = i.client.GetProductAttribute(ctx, attributeBrandCode)
+	if err != nil {
+		if err != sylius.ErrNotFound {
+			return fmt.Errorf("fetching brand attribute error: %s", err)
+		}
+
+		i.attrBrand, err = i.client.CreateProductAttribute(ctx, transfer.AttributeTypeSelect, transfer.Attribute{
+			Code: attributeBrandCode,
+			Translations: map[string]transfer.Translation{
+				transfer.LocaleRu: {Name: "Бренд"}, // TODO these translations must be moved to a common translation place.
+				transfer.LocaleEn: {Name: "Brand"},
+			},
+		})
+
+		if err != nil {
+			return fmt.Errorf("creating brand attribute error: %s", err)
+		}
 	}
 
-	return "", false
+	return nil
+}
+
+// GetBrandAttributeChoiceCode gets brand attribute choice code by highlite product info.
+func (i *AttributesImport) GetBrandAttributeChoiceCode(ctx context.Context, high highlite.Product) (string, error) {
+	if i.checkAttributeBrandChoiceCodeExists(high) {
+		return high.GetBrandCode(), nil
+	}
+
+	if err := i.addAttributeBrandChoiceCode(ctx, high); err != nil {
+		return "", fmt.Errorf("creating brand attribute choice error: %s", err)
+	}
+
+	return high.GetBrandCode(), nil
+}
+
+// Checks if brand attribute choice already exists.
+func (i *AttributesImport) checkAttributeBrandChoiceCodeExists(high highlite.Product) bool {
+	i.attrBrandLock.RLock()
+	defer i.attrBrandLock.RUnlock()
+
+	_, ok := i.attrBrand.Configuration.Choices[high.GetBrandCode()]
+
+	return ok
+}
+
+// Adds new brand attribute choice to the brand attribute.
+func (i *AttributesImport) addAttributeBrandChoiceCode(ctx context.Context, high highlite.Product) error {
+	i.attrBrandLock.Lock()
+	defer i.attrBrandLock.Unlock()
+
+	if _, ok := i.attrBrand.Configuration.Choices[high.GetBrandCode()]; ok {
+		return nil
+	}
+
+	i.attrBrand.Configuration.Choices[high.GetBrandCode()] = transfer.AttributeConfigurationChoice{
+		transfer.LocaleRu: high.Brand,
+		transfer.LocaleEn: high.Brand,
+	}
+
+	err := i.client.UpdateProductAttribute(ctx, *i.attrBrand)
+	if err != nil {
+		delete(i.attrBrand.Configuration.Choices, high.GetBrandCode())
+
+		return err
+	}
+
+	return nil
 }
