@@ -3,6 +3,7 @@ package translation
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"highlite2-import/internal/csv"
 )
@@ -46,12 +47,12 @@ func (t *ProductCSV) GetDescription() string {
 	description += "\n\n"
 	description += t.TechSpec
 
-	return description
+	return strings.Trim(description, "\n ")
 }
 
 // GetShortDescription returns short product description.
 func (t *ProductCSV) GetShortDescription() string {
-	return t.SubHeading
+	return strings.Trim(t.SubHeading, "\n ")
 }
 
 // FillMemoryDictionaryFromCSV fills an exact MemoryDictionary with translations from a csv file.

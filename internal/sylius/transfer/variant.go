@@ -22,27 +22,7 @@ func VariantsEqual(e VariantEntire, v Variant) bool {
 		return false
 	}
 
-	// checking translations
-	if len(e.Translations) != len(v.Translations) {
-		return false
-	}
-
-	for key, etr := range e.Translations {
-		vtr := v.Translations[key]
-		if etr.Name != vtr.Name {
-			return false
-		}
-		if etr.ShortDescription != vtr.ShortDescription {
-			return false
-		}
-		if etr.Slug != vtr.Slug {
-			return false
-		}
-		if etr.Description != vtr.Description {
-			return false
-		}
-	}
-
+	// checking prices
 	if len(e.ChannelPrices) != len(v.ChannelPrices) {
 		return false
 	}

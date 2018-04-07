@@ -234,13 +234,13 @@ func getProductFromHighliteMock(high highlite.Product) transfer.Product {
 			Enabled: true,
 			Translations: map[string]transfer.Translation{
 				transfer.LocaleEn: {
-					Name:             high.ProductName(),
+					Name:             high.GetProductName(),
 					Slug:             high.URL,
-					Description:      high.ProductDescription(),
+					Description:      high.GetProductDescription(),
 					ShortDescription: high.SubHeading,
 				},
 				transfer.LocaleRu: {
-					Name:             high.ProductName(),
+					Name:             high.GetProductName(),
 					Slug:             high.URL,
 					Description:      highTranslation.GetDescription(),
 					ShortDescription: highTranslation.GetShortDescription(),
@@ -267,13 +267,13 @@ func getProductEntireFromHighliteMock(high highlite.Product) *transfer.ProductEn
 		Enabled: true,
 		Translations: map[string]transfer.Translation{
 			transfer.LocaleEn: {
-				Name:             high.ProductName(),
+				Name:             high.GetProductName(),
 				Slug:             high.URL,
-				Description:      high.ProductDescription(),
+				Description:      high.GetProductDescription(),
 				ShortDescription: high.SubHeading,
 			},
 			transfer.LocaleRu: {
-				Name:             high.ProductName(),
+				Name:             high.GetProductName(),
 				Slug:             high.URL,
 				Description:      highTranslation.GetDescription(),
 				ShortDescription: highTranslation.GetShortDescription(),

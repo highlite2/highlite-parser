@@ -36,8 +36,8 @@ func TestProduct_ProductName(t *testing.T) {
 	product2 := Product{Name: "name", Brand: "brand"}
 
 	// assert
-	assert.Equal(t, "name", product1.ProductName())
-	assert.Equal(t, "brand name", product2.ProductName())
+	assert.Equal(t, "name", product1.GetProductName())
+	assert.Equal(t, "brand name", product2.GetProductName())
 }
 
 func TestProduct_GetBrandCode(t *testing.T) {

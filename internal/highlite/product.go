@@ -87,22 +87,30 @@ type Product struct {
 	Images []string
 }
 
-// ProductDescription combines description and specs and removes html entities.
-func (p Product) ProductDescription() string {
+// GetProductDescription combines description and specs and removes html entities.
+func (p Product) GetProductDescription() string {
 	description := replaceHTMLEntities(p.Description)
 	description += "\n\n"
 	description += replaceHTMLEntities(p.Specs)
 
-	return description
+	return strings.Trim(description, "\n ")
 }
 
-// ProductName combines name from brand and name fields.
-func (p Product) ProductName() string {
+// GetShortProductDescription returns trimmed short product description
+func (p Product) GetShortProductDescription() string {
+	return strings.Trim(p.SubHeading, "\n ")
+}
+
+// GetProductName combines name from brand and name fields.
+func (p Product) GetProductName() string {
+	var name string
 	if p.Brand == "" {
-		return p.Name
+		name = p.Name
+	} else {
+		name = p.Brand + " " + p.Name
 	}
 
-	return p.Brand + " " + p.Name
+	return strings.Trim(name, "\n ")
 }
 
 // GetBrandCode turns brand name into brand code.

@@ -72,7 +72,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 	}
 	defer imageBucket.Close()
 
-	productNew := i.getProductFromHighlite(high)
+	productNew := i.getProductFromHighlite(high, true)
 	images := prepareImages(high, &productNew, imageBucket)
 
 	productEntire, createErr := i.client.CreateProduct(ctx, productNew, images)
@@ -80,7 +80,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 		return fmt.Errorf("createProduct: client CreateProduct returned error: %s", createErr)
 	}
 
-	variantNew := i.getVariantFromHighlite(high)
+	variantNew := i.getVariantFromHighlite(high, true)
 	if _, err := i.client.CreateProductVariant(ctx, productEntire.Code, variantNew); err != nil {
 		return fmt.Errorf("createProduct: client CreateProductVariant returned error: %s", err)
 	}
@@ -90,7 +90,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 
 // Updates product.
 func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfer.ProductEntire, high highlite.Product) error {
-	productNew := i.getProductFromHighlite(high)
+	productNew := i.getProductFromHighlite(high, false)
 	if !transfer.ProductsEqual(productEntire, productNew) {
 		i.logger.Infof("Updating product %s", productEntire.Code)
 		if err := i.client.UpdateProduct(ctx, productNew); err != nil {
@@ -98,7 +98,7 @@ func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfe
 		}
 	}
 
-	variantNew := i.getVariantFromHighlite(high)
+	variantNew := i.getVariantFromHighlite(high, false)
 	if variantEntire, err := i.client.GetProductVariant(ctx, productEntire.Code, getProductMainVariantCode(productEntire.Code)); err != nil {
 		if err != sylius.ErrNotFound {
 			return fmt.Errorf("updateProduct: client GetProductVariant returned error: %s", err)
@@ -118,18 +118,10 @@ func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfe
 }
 
 // Creates sylius Variant structure from higlite product structure.
-func (i *ProductImport) getVariantFromHighlite(high highlite.Product) transfer.Variant {
-	return transfer.Variant{
+func (i *ProductImport) getVariantFromHighlite(high highlite.Product, insert bool) transfer.Variant {
+	variant := transfer.Variant{
 		VariantEntire: transfer.VariantEntire{
 			Code: getProductMainVariantCode(high.Code),
-			Translations: map[string]transfer.Translation{
-				transfer.LocaleEn: {
-					Name: strings.Trim(high.Name, "\n "),
-				},
-				transfer.LocaleRu: {
-					Name: strings.Trim(high.Name, "\n "),
-				},
-			},
 			ChannelPrices: map[string]transfer.ChannelPrice{
 				i.channelName: {
 					Price: high.Price,
@@ -137,25 +129,23 @@ func (i *ProductImport) getVariantFromHighlite(high highlite.Product) transfer.V
 			},
 		},
 	}
+
+	if insert {
+		variant.Translations = map[string]transfer.Translation{
+			transfer.LocaleEn: {Name: high.GetProductName()},
+			transfer.LocaleRu: {Name: high.GetProductName()},
+		}
+	}
+
+	return variant
 }
 
 // Creates sylius Product structure from higlite product structure.
-func (i *ProductImport) getProductFromHighlite(high highlite.Product) transfer.Product {
-	tr := transfer.Translation{
-		Name:             strings.Trim(high.ProductName(), "\n "),
-		Slug:             high.URL,
-		Description:      strings.Trim(high.ProductDescription(), "\n "),
-		ShortDescription: strings.Trim(high.SubHeading, "\n "),
-	}
-
+func (i *ProductImport) getProductFromHighlite(high highlite.Product, insert bool) transfer.Product {
 	product := transfer.Product{
 		ProductEntire: transfer.ProductEntire{
 			Code:    high.Code,
-			Enabled: true,
-			Translations: map[string]transfer.Translation{
-				transfer.LocaleEn: tr,
-				transfer.LocaleRu: tr,
-			},
+			Enabled: true, // TODO check if the product is available
 		},
 		MainTaxon: high.Category3.GetCode(),
 		ProductTaxons: strings.Join(
@@ -170,12 +160,27 @@ func (i *ProductImport) getProductFromHighlite(high highlite.Product) transfer.P
 		Channels: []string{i.channelName},
 	}
 
-	if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok {
-		tr.Description = strings.Trim(item.GetDescription(), "\n ")
-		tr.ShortDescription = strings.Trim(item.GetShortDescription(), "\n ")
-		product.Translations[transfer.LocaleRu] = tr
-	} else {
-		i.logger.Warnf("Can't find translations for product No %s", product.Code)
+	if insert {
+		enTranslation := transfer.Translation{
+			Name:             high.GetProductName(),
+			Slug:             high.URL,
+			Description:      high.GetProductDescription(),
+			ShortDescription: high.GetShortProductDescription(),
+		}
+
+		ruTranslation := enTranslation
+
+		if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok {
+			ruTranslation.Description = item.GetDescription()
+			ruTranslation.ShortDescription = item.GetShortDescription()
+		} else {
+			i.logger.Warnf("Can't find translations for product No %s", high.Code)
+		}
+
+		product.Translations = map[string]transfer.Translation{
+			transfer.LocaleEn: enTranslation,
+			transfer.LocaleRu: ruTranslation,
+		}
 	}
 
 	return product
