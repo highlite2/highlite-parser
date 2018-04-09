@@ -16,23 +16,23 @@ type Variant struct {
 	VariantEntire
 }
 
-// VariantsEqual checks if variants are equal
-func VariantsEqual(e VariantEntire, v Variant) bool {
+// VariantUpdateRequired checks if variants are equal
+func VariantUpdateRequired(e VariantEntire, v Variant) bool {
 	if e.Code != v.Code {
-		return false
+		return true
 	}
 
 	// checking prices
 	if len(e.ChannelPrices) != len(v.ChannelPrices) {
-		return false
+		return true
 	}
 
 	for key, price1 := range e.ChannelPrices {
 		price2 := v.ChannelPrices[key]
 		if int(price1.Price) != int(math.Round(price2.Price*100)) {
-			return false
+			return true
 		}
 	}
 
-	return true
+	return false
 }

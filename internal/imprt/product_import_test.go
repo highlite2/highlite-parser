@@ -303,7 +303,7 @@ func getProductVariantFromHighliteMock(high highlite.Product) transfer.Variant {
 					Name: high.Brand + " " + high.Name,
 				},
 				transfer.LocaleRu: {
-					Name:  high.Brand + " " + high.Name,
+					Name: high.Brand + " " + high.Name,
 				},
 			},
 			ChannelPrices: map[string]transfer.ChannelPrice{

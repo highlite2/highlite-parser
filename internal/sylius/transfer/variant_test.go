@@ -21,21 +21,21 @@ func TestVariantsEqual(t *testing.T) {
 
 		// act
 		// assert
-		assert.Equal(t, test.equal, VariantsEqual(getVariantMock(), filter), fmt.Sprintf("Failed test with index %d", i))
+		assert.Equal(t, test.updateRequired, VariantUpdateRequired(getVariantMock(), filter), fmt.Sprintf("Failed test with index %d", i))
 	}
 }
 
 var testVariantsEqualCases = []struct {
-	equal  bool
-	filter func(v Variant) Variant
+	updateRequired bool
+	filter         func(v Variant) Variant
 }{
 	{
-		equal: true,
 		filter: func(v Variant) Variant {
 			return v
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Variant) Variant {
 			v.Code = ""
 			return v
@@ -89,6 +89,7 @@ var testVariantsEqualCases = []struct {
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Variant) Variant {
 			pr := v.ChannelPrices["default"]
 			pr.Price = 100.1
@@ -97,6 +98,7 @@ var testVariantsEqualCases = []struct {
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Variant) Variant {
 			pr := v.ChannelPrices["default"]
 			v.ChannelPrices["new"] = pr
@@ -104,6 +106,7 @@ var testVariantsEqualCases = []struct {
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Variant) Variant {
 			v.ChannelPrices = map[string]ChannelPrice{}
 			return v

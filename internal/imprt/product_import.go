@@ -107,7 +107,7 @@ func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfe
 		if _, err := i.client.CreateProductVariant(ctx, productEntire.Code, variantNew); err != nil {
 			return fmt.Errorf("updateProduct: client CreateProductVariant returned error: %s", err)
 		}
-	} else if !transfer.VariantsEqual(*variantEntire, variantNew) {
+	} else if transfer.VariantUpdateRequired(*variantEntire, variantNew) {
 		i.logger.Infof("Updating variant %s", getProductMainVariantCode(productEntire.Code))
 		if err := i.client.UpdateProductVariant(ctx, productEntire.Code, variantNew); err != nil {
 			return fmt.Errorf("updateProduct: client UpdateProductVariant returned error: %s", err)
