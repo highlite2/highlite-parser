@@ -91,6 +91,10 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 // Updates product.
 func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfer.ProductEntire, high highlite.Product) error {
 	productNew := i.getProductFromHighlite(high, false)
+	if err := i.attrImport.SetProductAttributes(ctx, high, &productNew); err != nil {
+		return fmt.Errorf("settings attributes error: %s", err)
+	}
+
 	if transfer.ProductUpdateRequired(productEntire, productNew) {
 		i.logger.Infof("Updating product %s", productEntire.Code)
 		if err := i.client.UpdateProduct(ctx, productNew); err != nil {

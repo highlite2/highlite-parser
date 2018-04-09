@@ -80,6 +80,20 @@ func ProductUpdateRequired(e ProductEntire, p Product) bool {
 		return true
 	}
 
+	//checking attributes
+	if len(e.Attributes) != len(p.Attributes) {
+		return true
+	}
+	attributeMap := make(map[string]bool)
+	for _, a := range e.Attributes {
+		attributeMap[a.Attribute+a.LocaleCode+a.Value] = true
+	}
+	for _, a := range p.Attributes {
+		if _, ok := attributeMap[a.Attribute+a.LocaleCode+a.Value]; !ok {
+			return true
+		}
+	}
+
 	// checking main taxon
 	if p.MainTaxon != "" {
 		if e.MainTaxon == nil || p.MainTaxon != e.MainTaxon.Code {

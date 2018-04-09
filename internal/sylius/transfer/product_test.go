@@ -88,6 +88,13 @@ func getProductEntireMock() ProductEntire {
 			{Code: "channel1"},
 			{Code: "channel2"},
 		},
+		Attributes: []ProductAttribute{
+			{
+				Attribute:  "type1",
+				LocaleCode: "locale1",
+				Value:      "value1",
+			},
+		},
 	}
 }
 
@@ -95,6 +102,79 @@ var testProductsEqualCases = []struct {
 	updateRequired bool
 	filter         func(v Product) Product
 }{
+	{
+		updateRequired: true,
+		filter: func(v Product) Product {
+			v.Attributes = []ProductAttribute{}
+			return v
+		},
+	},
+	{
+		updateRequired: true,
+		filter: func(v Product) Product {
+			v.Attributes = []ProductAttribute{
+				{
+					Attribute:  "type1",
+					LocaleCode: "locale1",
+					Value:      "value1",
+				},
+				{
+					Attribute:  "type2",
+					LocaleCode: "locale1",
+					Value:      "value1",
+				},
+			}
+			return v
+		},
+	},
+	{
+		filter: func(v Product) Product {
+			v.Attributes = []ProductAttribute{
+				{
+					Attribute:  "type1",
+					LocaleCode: "locale1",
+					Value:      "value1",
+				},
+			}
+			return v
+		},
+	},
+	{
+		updateRequired: true,
+		filter: func(v Product) Product {
+			v.Attributes = []ProductAttribute{
+				{
+					Attribute:  "type1",
+					LocaleCode: "locale1",
+					Value:      "value1",
+				},
+				{
+					Attribute:  "type1",
+					LocaleCode: "locale2",
+					Value:      "value1",
+				},
+			}
+			return v
+		},
+	},
+	{
+		updateRequired: true,
+		filter: func(v Product) Product {
+			v.Attributes = []ProductAttribute{
+				{
+					Attribute:  "type1",
+					LocaleCode: "locale1",
+					Value:      "value1",
+				},
+				{
+					Attribute:  "type1",
+					LocaleCode: "locale1",
+					Value:      "value2",
+				},
+			}
+			return v
+		},
+	},
 	{
 		filter: func(v Product) Product {
 			return v

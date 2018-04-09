@@ -71,6 +71,7 @@ func TestUpdateProduct_NoUpdates(t *testing.T) {
 	imgProvider := &mocks.ImageProvider{}
 
 	attrImport := &mocks.AttributesImport{}
+	attrImport.On("SetProductAttributes", mock.Anything, mock.Anything, mock.Anything).Once().Return(nil)
 
 	// act
 	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
@@ -107,6 +108,7 @@ func TestUpdateProduct_ProductUpdate(t *testing.T) {
 	imgProvider := &mocks.ImageProvider{}
 
 	attrImport := &mocks.AttributesImport{}
+	attrImport.On("SetProductAttributes", mock.Anything, mock.Anything, mock.Anything).Once().Return(nil)
 
 	// act
 	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
@@ -143,6 +145,7 @@ func TestUpdateProduct_VariantUpdate(t *testing.T) {
 	imgProvider := &mocks.ImageProvider{}
 
 	attrImport := &mocks.AttributesImport{}
+	attrImport.On("SetProductAttributes", mock.Anything, mock.Anything, mock.Anything).Once().Return(nil)
 
 	// act
 	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
