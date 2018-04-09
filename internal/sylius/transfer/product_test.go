@@ -25,6 +25,9 @@ func TestProductEntire_UnmarshalJSON(t *testing.T) {
 	assert.Equal(t, "phantom-300-led-matrix-40060", product.Translations["ru_RU"].Slug)
 	assert.Equal(t, 1, len(product.Channels))
 	assert.Equal(t, "default", product.Channels[0].Code)
+	assert.Equal(t, "mug_color", product.Attributes[0].Attribute)
+	assert.Equal(t, "en_US", product.Attributes[0].LocaleCode)
+	assert.Equal(t, "yellow", product.Attributes[0].Value)
 }
 
 func TestProductsEqual_Equal(t *testing.T) {

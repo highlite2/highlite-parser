@@ -14,6 +14,7 @@ type ProductEntire struct {
 	ProductTaxons []TaxonWrap            `json:"productTaxons,omitempty"`
 	MainTaxon     *Taxon                 `json:"mainTaxon,omitempty"`
 	Channels      []Channel              `json:"channels"`
+	Attributes    []ProductAttribute     `json:"attributes,omitempty"`
 }
 
 // Help structure to unmarshal Sylius api response.
@@ -25,6 +26,7 @@ type productEntireRaw struct {
 	ProductTaxons []TaxonWrap            `json:"productTaxons,omitempty"`
 	MainTaxon     *Taxon                 `json:"mainTaxon,omitempty"`
 	Channels      []Channel              `json:"channels"`
+	Attributes    []ProductAttribute     `json:"attributes,omitempty"`
 }
 
 // UnmarshalJSON helps to fix inconsistency in sylius api response.
@@ -41,6 +43,7 @@ func (p *ProductEntire) UnmarshalJSON(value []byte) error {
 	p.MainTaxon = raw.MainTaxon
 	p.ProductTaxons = raw.ProductTaxons
 	p.Channels = raw.Channels
+	p.Attributes = raw.Attributes
 
 	var images []Image
 	if err := json.Unmarshal(raw.Images, &images); err == nil {

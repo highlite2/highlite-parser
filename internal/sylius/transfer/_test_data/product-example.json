@@ -2,7 +2,13 @@
   "name": "Phantom 300 LED Matrix",
   "id": 5096,
   "code": "highlite-40060",
-  "attributes": [],
+  "attributes": [
+    {
+      "attribute": "mug_color",
+      "localeCode": "en_US",
+      "value": "yellow"
+    }
+  ],
   "options": [],
   "associations": [],
   "translations": {
