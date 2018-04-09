@@ -47,10 +47,6 @@ type ProductImport struct {
 
 // Import imports highlite product into sylius.
 func (i *ProductImport) Import(ctx context.Context, high highlite.Product) error {
-	if _, err := i.attrImport.GetBrandAttributeChoiceCode(ctx, high); err != nil {
-		return fmt.Errorf("import: GetBrandAttributeChoiceCode error: %s", err)
-	}
-
 	if product, err := i.client.GetProduct(ctx, high.Code); err == nil {
 		return i.updateProduct(ctx, *product, high)
 	} else if err == sylius.ErrNotFound {
@@ -73,6 +69,10 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 	defer imageBucket.Close()
 
 	productNew := i.getProductFromHighlite(high, true)
+	if err := i.attrImport.SetProductAttributes(ctx, high, &productNew); err != nil {
+		return fmt.Errorf("settings attributes error: %s", err)
+	}
+
 	images := prepareImages(high, &productNew, imageBucket)
 
 	productEntire, createErr := i.client.CreateProduct(ctx, productNew, images)

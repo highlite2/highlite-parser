@@ -15,7 +15,7 @@ const attributeBrandCode = "highlite-brand"
 
 // IAttributesImport is a Sylius attributes importer.
 type IAttributesImport interface {
-	GetBrandAttributeChoiceCode(ctx context.Context, high highlite.Product) (string, error)
+	SetProductAttributes(ctx context.Context, high highlite.Product, product *transfer.Product) error
 }
 
 // NewAttributesImport creates new Sylius attributes importer.
@@ -38,6 +38,29 @@ type AttributesImport struct {
 // Init initializes actual for import attributes.
 func (i *AttributesImport) Init(ctx context.Context) error {
 	return i.initBrandAttribute(ctx)
+}
+
+// SetProductAttributes sets product attributes.
+func (i *AttributesImport) SetProductAttributes(ctx context.Context, high highlite.Product, product *transfer.Product) error {
+	brand, err := i.getBrandAttributeChoiceCode(ctx, high)
+	if err != nil {
+		return err
+	}
+
+	product.Attributes = []transfer.ProductAttribute{
+		{
+			Attribute:  attributeBrandCode,
+			LocaleCode: transfer.LocaleEn,
+			Value:      brand,
+		},
+		{
+			Attribute:  attributeBrandCode,
+			LocaleCode: transfer.LocaleRu,
+			Value:      brand,
+		},
+	}
+
+	return nil
 }
 
 // Initializes brand attribute.
@@ -66,8 +89,8 @@ func (i *AttributesImport) initBrandAttribute(ctx context.Context) error {
 	return nil
 }
 
-// GetBrandAttributeChoiceCode gets brand attribute choice code by highlite product info.
-func (i *AttributesImport) GetBrandAttributeChoiceCode(ctx context.Context, high highlite.Product) (string, error) {
+// Gets brand attribute choice code by highlite product info.
+func (i *AttributesImport) getBrandAttributeChoiceCode(ctx context.Context, high highlite.Product) (string, error) {
 	if i.checkAttributeBrandChoiceCodeExists(high) {
 		return high.GetBrandCode(), nil
 	}

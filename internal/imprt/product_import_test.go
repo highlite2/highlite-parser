@@ -1,20 +1,17 @@
 package imprt
 
 import (
+	"bytes"
 	"context"
+	"strings"
 	"testing"
 
 	"highlite2-import/internal/highlite"
-	"highlite2-import/internal/sylius"
-	"highlite2-import/internal/test/mocks"
-
-	"bytes"
-
 	img "highlite2-import/internal/highlite/image"
 	"highlite2-import/internal/highlite/translation"
+	"highlite2-import/internal/sylius"
 	"highlite2-import/internal/sylius/transfer"
-
-	"strings"
+	"highlite2-import/internal/test/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -43,7 +40,7 @@ func TestCreateProduct(t *testing.T) {
 	imgProvider.On("GetImages", mock.Anything, high.Images).Once().Return(getImageBucketMock(high.Images), nil)
 
 	attrImport := &mocks.AttributesImport{}
-	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
+	attrImport.On("SetProductAttributes", mock.Anything, mock.Anything, mock.Anything).Once().Return(nil)
 
 	// act
 	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
@@ -74,7 +71,6 @@ func TestUpdateProduct_NoUpdates(t *testing.T) {
 	imgProvider := &mocks.ImageProvider{}
 
 	attrImport := &mocks.AttributesImport{}
-	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
 
 	// act
 	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
@@ -111,7 +107,6 @@ func TestUpdateProduct_ProductUpdate(t *testing.T) {
 	imgProvider := &mocks.ImageProvider{}
 
 	attrImport := &mocks.AttributesImport{}
-	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
 
 	// act
 	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
@@ -148,7 +143,6 @@ func TestUpdateProduct_VariantUpdate(t *testing.T) {
 	imgProvider := &mocks.ImageProvider{}
 
 	attrImport := &mocks.AttributesImport{}
-	attrImport.On("GetBrandAttributeChoiceCode", mock.Anything, mock.Anything).Once().Return("", nil)
 
 	// act
 	im := NewProductImport(client, categoryImport, logger, dictionary, imgProvider, attrImport)
