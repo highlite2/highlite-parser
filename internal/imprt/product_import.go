@@ -91,7 +91,7 @@ func (i *ProductImport) createProduct(ctx context.Context, high highlite.Product
 // Updates product.
 func (i *ProductImport) updateProduct(ctx context.Context, productEntire transfer.ProductEntire, high highlite.Product) error {
 	productNew := i.getProductFromHighlite(high, false)
-	if !transfer.ProductsEqual(productEntire, productNew) {
+	if transfer.ProductUpdateRequired(productEntire, productNew) {
 		i.logger.Infof("Updating product %s", productEntire.Code)
 		if err := i.client.UpdateProduct(ctx, productNew); err != nil {
 			return fmt.Errorf("updateProduct: client UpdateProduct returned error: %s", err)

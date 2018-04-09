@@ -300,10 +300,10 @@ func getProductVariantFromHighliteMock(high highlite.Product) transfer.Variant {
 			Code: high.Code + "_main",
 			Translations: map[string]transfer.Translation{
 				transfer.LocaleEn: {
-					Name: high.Name,
+					Name: high.Brand + " " + high.Name,
 				},
 				transfer.LocaleRu: {
-					Name: high.Name,
+					Name:  high.Brand + " " + high.Name,
 				},
 			},
 			ChannelPrices: map[string]transfer.ChannelPrice{

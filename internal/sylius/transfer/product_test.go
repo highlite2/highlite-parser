@@ -34,7 +34,7 @@ func TestProductsEqual_Equal(t *testing.T) {
 
 		// act
 		// assert
-		assert.Equal(t, test.equal, ProductsEqual(getProductEntireMock(), filter), fmt.Sprintf("Failed test with index %d", i))
+		assert.Equal(t, test.updateRequired, ProductUpdateRequired(getProductEntireMock(), filter), fmt.Sprintf("Failed test with index %d", i))
 	}
 }
 
@@ -89,16 +89,16 @@ func getProductEntireMock() ProductEntire {
 }
 
 var testProductsEqualCases = []struct {
-	equal  bool
-	filter func(v Product) Product
+	updateRequired bool
+	filter         func(v Product) Product
 }{
 	{
-		equal: true,
 		filter: func(v Product) Product {
 			return v
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Product) Product {
 			v.Code = ""
 			return v
@@ -150,32 +150,33 @@ var testProductsEqualCases = []struct {
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Product) Product {
 			v.Channels[0] = "not default"
 			return v
 		},
 	},
 	{
-		equal: true,
 		filter: func(v Product) Product {
 			v.Channels[0], v.Channels[1] = v.Channels[1], v.Channels[0]
 			return v
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Product) Product {
 			v.ProductTaxons = "taxon3, taxon1"
 			return v
 		},
 	},
 	{
+		updateRequired: true,
 		filter: func(v Product) Product {
 			v.MainTaxon = ""
 			return v
 		},
 	},
 	{
-		equal: true,
 		filter: func(v Product) Product {
 			v.ProductTaxons = "taxon3, taxon2, taxon1"
 			return v

@@ -70,26 +70,26 @@ type Product struct {
 	Channels      []string `json:"channels,omitempty"`
 }
 
-// ProductsEqual checks if api response product equals to the composed one.
+// ProductUpdateRequired checks if api response product equals to the composed one.
 // It doesn't check Images and Enabled flag.
-func ProductsEqual(e ProductEntire, p Product) bool {
+func ProductUpdateRequired(e ProductEntire, p Product) bool {
 	if e.Code != p.Code {
-		return false
+		return true
 	}
 
 	// checking main taxon
 	if p.MainTaxon != "" {
 		if e.MainTaxon == nil || p.MainTaxon != e.MainTaxon.Code {
-			return false
+			return true
 		}
 	} else if e.MainTaxon != nil {
-		return false
+		return true
 	}
 
 	// checking taxons
 	taxons := strings.Split(p.ProductTaxons, ",")
 	if len(taxons) != len(e.ProductTaxons) {
-		return false
+		return true
 	}
 	for _, taxon := range taxons {
 		taxon = strings.Trim(taxon, " ")
@@ -101,13 +101,13 @@ func ProductsEqual(e ProductEntire, p Product) bool {
 			}
 		}
 		if !found {
-			return false
+			return true
 		}
 	}
 
 	// checking channels
 	if len(p.Channels) != len(e.Channels) {
-		return false
+		return true
 	}
 	for _, code := range p.Channels {
 		found := false
@@ -118,9 +118,9 @@ func ProductsEqual(e ProductEntire, p Product) bool {
 			}
 		}
 		if !found {
-			return false
+			return true
 		}
 	}
 
-	return true
+	return false
 }
