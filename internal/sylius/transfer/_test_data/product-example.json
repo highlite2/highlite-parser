@@ -4,9 +4,11 @@
   "code": "highlite-40060",
   "attributes": [
     {
-      "attribute": "mug_color",
+      "code": "mug_material",
+      "value": "concrete",
       "localeCode": "en_US",
-      "value": "yellow"
+      "type": "select",
+      "id": 155
     }
   ],
   "options": [],

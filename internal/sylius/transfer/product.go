@@ -2,7 +2,6 @@ package transfer
 
 import (
 	"encoding/json"
-	"strings"
 )
 
 // ProductEntire is a representation of a product in Sylius.
@@ -14,19 +13,20 @@ type ProductEntire struct {
 	ProductTaxons []TaxonWrap            `json:"productTaxons,omitempty"`
 	MainTaxon     *Taxon                 `json:"mainTaxon,omitempty"`
 	Channels      []Channel              `json:"channels"`
-	Attributes    []ProductAttribute     `json:"attributes,omitempty"`
+	Attributes    []IProductAttribute    `json:"attributes,omitempty"`
+	RawAttributes []ProductAttributeRawHelper
 }
 
 // Help structure to unmarshal Sylius api response.
 type productEntireRaw struct {
-	Code          string                 `json:"code,omitempty"`
-	Translations  map[string]Translation `json:"translations,omitempty"`
-	Images        json.RawMessage        `json:"images,omitempty"`
-	Enabled       bool                   `json:"enabled"`
-	ProductTaxons []TaxonWrap            `json:"productTaxons,omitempty"`
-	MainTaxon     *Taxon                 `json:"mainTaxon,omitempty"`
-	Channels      []Channel              `json:"channels"`
-	Attributes    []ProductAttribute     `json:"attributes,omitempty"`
+	Code          string                      `json:"code,omitempty"`
+	Translations  map[string]Translation      `json:"translations,omitempty"`
+	Images        json.RawMessage             `json:"images,omitempty"`
+	Enabled       bool                        `json:"enabled"`
+	ProductTaxons []TaxonWrap                 `json:"productTaxons,omitempty"`
+	MainTaxon     *Taxon                      `json:"mainTaxon,omitempty"`
+	Channels      []Channel                   `json:"channels"`
+	RawAttributes []ProductAttributeRawHelper `json:"attributes,omitempty"`
 }
 
 // UnmarshalJSON helps to fix inconsistency in sylius api response.
@@ -43,7 +43,7 @@ func (p *ProductEntire) UnmarshalJSON(value []byte) error {
 	p.MainTaxon = raw.MainTaxon
 	p.ProductTaxons = raw.ProductTaxons
 	p.Channels = raw.Channels
-	p.Attributes = raw.Attributes
+	p.RawAttributes = raw.RawAttributes
 
 	var images []Image
 	if err := json.Unmarshal(raw.Images, &images); err == nil {
@@ -68,76 +68,8 @@ func (p *ProductEntire) UnmarshalJSON(value []byte) error {
 type Product struct {
 	ProductEntire
 
-	MainTaxon     string   `json:"mainTaxon,omitempty"`
-	ProductTaxons string   `json:"productTaxons,omitempty"` // String in which the codes of taxons was written down (separated by comma)
+	MainTaxon string `json:"mainTaxon,omitempty"`
+	// String in which the codes of taxons was written down (separated by comma)
+	ProductTaxons string   `json:"productTaxons,omitempty"`
 	Channels      []string `json:"channels,omitempty"`
-}
-
-// ProductUpdateRequired checks if api response product equals to the composed one.
-// It doesn't check Images and Enabled flag.
-func ProductUpdateRequired(e ProductEntire, p Product) bool {
-	if e.Code != p.Code {
-		return true
-	}
-
-	//checking attributes
-	if len(e.Attributes) != len(p.Attributes) {
-		return true
-	}
-	attributeMap := make(map[string]bool)
-	for _, a := range e.Attributes {
-		attributeMap[a.Attribute+a.LocaleCode+a.Value] = true
-	}
-	for _, a := range p.Attributes {
-		if _, ok := attributeMap[a.Attribute+a.LocaleCode+a.Value]; !ok {
-			return true
-		}
-	}
-
-	// checking main taxon
-	if p.MainTaxon != "" {
-		if e.MainTaxon == nil || p.MainTaxon != e.MainTaxon.Code {
-			return true
-		}
-	} else if e.MainTaxon != nil {
-		return true
-	}
-
-	// checking taxons
-	taxons := strings.Split(p.ProductTaxons, ",")
-	if len(taxons) != len(e.ProductTaxons) {
-		return true
-	}
-	for _, taxon := range taxons {
-		taxon = strings.Trim(taxon, " ")
-		found := false
-		for _, wrap := range e.ProductTaxons {
-			if wrap.Taxon.Code == taxon {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return true
-		}
-	}
-
-	// checking channels
-	if len(p.Channels) != len(e.Channels) {
-		return true
-	}
-	for _, code := range p.Channels {
-		found := false
-		for _, channel := range e.Channels {
-			if channel.Code == code {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return true
-		}
-	}
-
-	return false
 }

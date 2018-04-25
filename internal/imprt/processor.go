@@ -58,6 +58,9 @@ func (p *Processor) Update(ctx context.Context) {
 		}
 
 		i++
+		if i >= 1 {
+			return
+		}
 		if i%50 == 0 {
 			p.logger.Infof("Processed %d products", i)
 		}

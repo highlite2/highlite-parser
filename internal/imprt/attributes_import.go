@@ -47,14 +47,14 @@ func (i *AttributesImport) SetProductAttributes(ctx context.Context, high highli
 		return err
 	}
 
-	product.Attributes = []transfer.ProductAttribute{
-		{
-			Attribute:  attributeBrandCode,
+	product.Attributes = []transfer.IProductAttribute{
+		transfer.ProductAttributeSelectSingle{
+			Code:       attributeBrandCode,
 			LocaleCode: transfer.LocaleEn,
 			Value:      brand,
 		},
-		{
-			Attribute:  attributeBrandCode,
+		transfer.ProductAttributeSelectSingle{
+			Code:       attributeBrandCode,
 			LocaleCode: transfer.LocaleRu,
 			Value:      brand,
 		},
