@@ -34,6 +34,7 @@ func (p *Processor) Update(ctx context.Context) {
 
 	csvParser := csv.NewReader(p.items)
 	csvParser.Separator = ';'
+	csvParser.FieldsFixed = false
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
 	i := 0
