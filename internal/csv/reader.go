@@ -21,6 +21,8 @@ type Reader struct {
 	// If this flag is true, parser will return an error if some lines field count differs from
 	// FieldsCount value. Default true.
 	FieldsFixed bool
+	// OneRowRecord if true, reader will consider that one record must be on a single row
+	OneRowRecord bool
 
 	input        *bufio.Reader
 	lineBuffer   bytes.Buffer
@@ -70,6 +72,11 @@ func (r *Reader) Next() bool {
 
 	return len(r.values) > 0
 
+}
+
+// CurrentRowIndex returns current line number
+func (r *Reader) CurrentRowIndex() int {
+	return r.currentRowIndex
 }
 
 // GetNext reads the next row and returns its values.
@@ -148,6 +155,10 @@ func (r *Reader) setNextFieldIndex() {
 
 func (r *Reader) getField(r1 rune) (bool, error) {
 	r.setNextFieldIndex()
+
+	if r.OneRowRecord {
+		return r.getUnquotedField(r1)
+	}
 
 	switch r1 {
 	case '"', '\'':

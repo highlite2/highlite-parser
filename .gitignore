@@ -2,5 +2,6 @@
 .DS_Store
 vendor/
 dev/config.env
+data/products_v2_0.csv
 
 internal/test/mocks/

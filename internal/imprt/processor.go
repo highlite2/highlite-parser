@@ -35,7 +35,13 @@ func (p *Processor) Update(ctx context.Context) {
 	csvParser := csv.NewReader(p.items)
 	csvParser.Separator = ';'
 	csvParser.FieldsFixed = false
+	csvParser.OneRowRecord = true
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
+
+	if err := csvMapper.CheckTitles(highlite.GetRequiredCSVTitles()); err != nil {
+		p.logger.Error(err.Error())
+		return
+	}
 
 	i := 0
 	for {
@@ -55,7 +61,16 @@ func (p *Processor) Update(ctx context.Context) {
 			}
 
 			product := highlite.GetProductFromCSVImport(csvMapper, csvParser.Values())
-			<-p.workerPool.AddJob(p.getImportJob(ctx, product))
+			if err := csvMapper.CheckValues(csvParser.Values()); err != nil {
+				p.logger.Errorf(
+					"Error processing csv with product updates: check values error on line %d: %s",
+					csvParser.CurrentRowIndex(),
+					err.Error(),
+				)
+				p.logger.Warn(product.String())
+			} else {
+				<-p.workerPool.AddJob(p.getImportJob(ctx, product))
+			}
 		}
 
 		i++

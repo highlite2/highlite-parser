@@ -1,6 +1,7 @@
 package highlite
 
 import (
+	"fmt"
 	"strings"
 
 	"highlite2-import/internal/csv"
@@ -50,7 +51,7 @@ const (
 	titleSubstitute        string = "Substitute"
 	titleCatalogPage       string = "Catalog Page"
 	titleInStock           string = "In Stock"
-	titleExpWeekOfArrival  string = "Exp. Week of Arrival"
+	titleExpWeekOfArrival  string = "\"Exp. Week of Arrival\""
 	titleWebshop           string = "Webshop"
 	titleSubheadingEN      string = "Subheading EN"
 	titleMainDescriptionEN string = "Main Description EN"
@@ -61,6 +62,17 @@ const (
 	titleBrand             string = "Brand"
 	titleSubcategory3      string = "Subcategory 3"
 )
+
+// GetRequiredCSVTitles returns titles of csv file
+func GetRequiredCSVTitles() []string {
+	return []string{
+		titleProductNo, titleProductName, titleCountryOfOrigin, titleWeight, titleLength, titleWidth, titleHeight,
+		titleQuantityInCarton, titleEANNo, titleInternetAdvice, titleUnitPrice, titleMinSalesQuantity, titleCategory,
+		titleSubcategory1, titleSubcategory2, titleTariffNo, titleStatus, titleAccessory, titleSubstitute,
+		titleCatalogPage, titleInStock, titleExpWeekOfArrival, titleWebshop, titleSubheadingEN, titleMainDescriptionEN,
+		titleSpecsEN, titleImagesList, titleManual, titleYoutubeLink, titleBrand, titleSubcategory3,
+	}
+}
 
 // Product is a highlite product.
 type Product struct {
@@ -140,6 +152,26 @@ func GetProductFromCSVImport(mapper *csv.TitleMap, values []string) Product {
 	product.Images = parseImages(imagesString)
 
 	return product
+}
+
+// String product info dump
+func (p Product) String() string {
+	info := ""
+	info += fmt.Sprintf("No: %s\n", p.No)
+	info += fmt.Sprintf("Name: %s\n", p.Name)
+	info += fmt.Sprintf("SubHeading: %s\n", p.SubHeading)
+	info += fmt.Sprintf("Description: %s\n", p.Description)
+	info += fmt.Sprintf("Specs: %s\n", p.Specs)
+	info += fmt.Sprintf("Brand: %s\n", p.Brand)
+	info += fmt.Sprintf("InStock: %s\n", p.InStock)
+	info += fmt.Sprintf("Status: %s\n", p.Status)
+	info += fmt.Sprintf("Country: %s\n", p.Country)
+	info += fmt.Sprintf("CategoryRoot: %s\n", p.CategoryRoot.Name)
+	info += fmt.Sprintf("Category1: %s\n", p.Category1.Name)
+	info += fmt.Sprintf("Category2: %s\n", p.Category2.Name)
+	info += fmt.Sprintf("Category3: %s", p.Category3.Name)
+
+	return info
 }
 
 // Converts string containing product images to a slice of strings.

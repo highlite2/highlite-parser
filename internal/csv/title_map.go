@@ -1,6 +1,9 @@
 package csv
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 // NewTitleMap creates new TitleMap object and executes
 // titles initialization
@@ -28,6 +31,26 @@ func (t *TitleMap) Init(titles []string) {
 	for i, v := range titles {
 		t.titles[t.processValue(v)] = i
 	}
+}
+
+// CheckTitles checks if all titles exist in a title map
+func (t *TitleMap) CheckTitles(titles []string) error {
+	for _, title := range titles {
+		if _, ok := t.titles[title]; !ok {
+			return fmt.Errorf("can not find %s in title map", title)
+		}
+	}
+
+	return nil
+}
+
+// CheckValues checks if values count equals titles count
+func (t *TitleMap) CheckValues(values []string) error {
+	if len(t.titles) != len(values) {
+		return fmt.Errorf("wrong values count: %d, must be: %d", len(values), len(t.titles))
+	}
+
+	return nil
 }
 
 // GetString finds a value from values slice by title. First, it gets title index
