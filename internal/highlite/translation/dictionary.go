@@ -38,3 +38,8 @@ func (t *MemoryDictionary) Get(lang string, id string) (IProduct, bool) {
 
 	return product, ok
 }
+
+// GetMap returns dictionary map
+func (t *MemoryDictionary) GetMap() map[string]map[string]IProduct {
+	return t.languages
+}

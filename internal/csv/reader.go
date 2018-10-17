@@ -220,14 +220,22 @@ func (r *Reader) getQuotedField(pair rune) (bool, error) {
 func (r *Reader) readRune() (rune, error) {
 	r1, _, err := r.input.ReadRune()
 
-	if r1 == '\r' {
+	if r.rowCount == 1 && r.colCount == 0 && r1 == 0xFEFF {
+		// skip  BOM in the beginning of the file https://en.wikipedia.org/wiki/Byte_order_mark
 		r1, _, err = r.input.ReadRune()
-		if err == nil {
-			if r1 != '\n' {
-				r.input.UnreadRune()
-				r1 = '\r'
+	}
+
+	if r1 == '\r' || r1 == '\n' {
+		var r2 rune
+		r2, _, err = r.input.ReadRune()
+		// there are different valid ways to set a new line: \n, \r, \n\r, \r\n
+		// each of those we consider just as \n
+		if err != nil || (r1 != '\n' || r2 != '\r') && (r1 != '\r' || r2 != '\n') {
+			if err != io.EOF {
+				err = r.input.UnreadRune()
 			}
 		}
+		r1 = '\n'
 	}
 
 	if r1 == '\n' {
