@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"strings"
 	"sync"
 	"testing"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"highlite2-import/internal/csv"
 )
 
 var titles = []string{`Product No.`, `Product Name`, `Country of Origin`, `Unit Price`, `Category`}
@@ -39,7 +39,7 @@ func TestProcessor_Update(t *testing.T) {
 	)
 
 	// act
-	processor := NewProcessor(logger, pool, pimp, processorTestDataGetReader())
+	processor := NewProcessor(logger, pool, pimp, processorTestDataCSVParser())
 	processor.SetTitles(titles)
 	processor.Update(context.Background())
 	<-pool.Stop()
@@ -59,7 +59,7 @@ var processorTestData = map[string][]string{
 	"8": {"8", "product 8", "country 8", "108.56", "fashion 8"},
 }
 
-func processorTestDataGetReader() io.Reader {
+func processorTestDataCSVParser() *csv.Reader {
 	writer := bytes.Buffer{}
 	writer.WriteString(strings.Join(titles, ";"))
 	writer.WriteByte('\n')
@@ -69,5 +69,10 @@ func processorTestDataGetReader() io.Reader {
 		writer.WriteRune('\n')
 	}
 
-	return bytes.NewReader(writer.Bytes())
+	csvParser := csv.NewReader(bytes.NewReader(writer.Bytes()))
+	csvParser.Separator = ';'
+	csvParser.FieldsFixed = false
+	csvParser.OneRowRecord = true
+
+	return csvParser
 }
