@@ -2,7 +2,7 @@ version: '2'
 
 services:
 
-  import:
+  check:
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,3 +12,14 @@ services:
       - config.env
     network_mode: "host"
     command: ["go", "run", "main.go"]
+
+  import:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/go/src/highlite2-import
+    env_file:
+      - config.env
+    network_mode: "host"
+    command: ["go", "run", "main.go", "-action=import"]

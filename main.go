@@ -18,10 +18,11 @@ func main() {
 
 	switch *act {
 	case "import":
+		logger.Info("starting import...")
 		action.Import(ctx, config, logger)
 
 	default:
-		logger.Info("checking import...")
+		logger.Info("starting check...")
 		action.ImportCheck(ctx, config, logger)
 	}
 }

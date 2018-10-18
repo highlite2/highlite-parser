@@ -19,8 +19,8 @@ dev-gen:
 	${INFO} "Generating mocks..."
 	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) run --rm import go generate $(DEV_GOPACKAGES)
 
-.PHONY: dev-check
-dev-check:
+.PHONY: dev-lint
+dev-lint:
 	${INFO} "Running goimports..."
 	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) run --rm import goimports -w -local highlite2-import $(DEV_GOFILES)
 	${INFO} "Running go vet..."
@@ -37,6 +37,10 @@ dev-test:
 dev-import:
 	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) up --force-recreate -d import
 	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) logs -f import
+
+.PHONY: dev-check
+dev-check:
+	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) up --force-recreate check
 
 .PHONY: dev-import-logs
 dev-import-logs:
