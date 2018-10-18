@@ -11,7 +11,7 @@ import (
 
 func TestPool_AllJobsAreExecuted(t *testing.T) {
 	// arrange
-	jobNumber := 10000
+	jobNumber := 1000
 	pool := NewPool(10)
 	ready := make(chan bool)
 	job := NewCallbackJob(func() error {
@@ -40,7 +40,7 @@ func TestPool_AllJobsAreExecuted(t *testing.T) {
 
 func TestPool_AddedJobsAreExecutedAfterStop(t *testing.T) {
 	// arrange
-	jobNumber := 10000
+	jobNumber := 1000
 	var jobDone, jobAdded int32
 	var err error
 	pool := NewPool(10)
