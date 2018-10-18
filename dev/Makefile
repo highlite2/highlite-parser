@@ -31,7 +31,7 @@ dev-check:
 .PHONY: dev-test
 dev-test:
 	${INFO} "Running tests..."
-	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) run --rm import go test -v $(DEV_GOPACKAGES)
+	@ docker-compose -p $(DEV_PROJECT) -f $(DEV_COMPOSE_FILE) run --rm import go test --cover -race $(DEV_GOPACKAGES)
 
 .PHONY: dev-import
 dev-import:

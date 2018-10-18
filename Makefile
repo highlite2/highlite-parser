@@ -6,13 +6,9 @@ PROJECT_NAME := highlite2-import
 # -----------------------------------------------------------------------------
 include dev/Makefile
 
-.PHONY: check-translations
-check-translations:
-	@export TRANSLATIONS_FILE_PATH=data/Highlite-RUS-13-10-2018.csv && export TRANSLATIONS_FILE_SEPARATOR=";" && go run main.go -action=translation-check
-
 .PHONY: test
 test:
-	go test ./...
+	go test --cover -race ./...
 
 # Common functions
 # -----------------------------------------------------------------------------

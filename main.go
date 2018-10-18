@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
-
 	"highlite2-import/internal"
 	"highlite2-import/internal/action"
 	"highlite2-import/internal/log"
@@ -21,9 +19,11 @@ func main() {
 	switch *act {
 	case "import":
 		action.Import(ctx, config, logger)
-	case "translation-check":
-		action.TranslationCheck(ctx, config, logger)
 	default:
-		fmt.Println("no cmd was specified")
+		logger.Info("checking translations...")
+		action.TranslationCheck(ctx, config, logger)
+
+		logger.Info("checking product updates...")
+		action.UpdatesCheck(ctx, config, logger)
 	}
 }

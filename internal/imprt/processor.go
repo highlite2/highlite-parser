@@ -10,14 +10,23 @@ import (
 	"highlite2-import/internal/queue"
 )
 
+// CSVParser is a highlite file updates parser interface
+type CSVParser interface {
+	GetNext() []string
+	Next() bool
+	Err() error
+	Values() []string
+	CurrentRowIndex() int
+}
+
 // NewProcessor creates an Processor instance.
-func NewProcessor(logger log.ILogger, pool queue.IPool, productImport IProductImport, items io.Reader) *Processor {
+func NewProcessor(logger log.ILogger, pool queue.IPool, productImport IProductImport, csvParser CSVParser) *Processor {
 	return &Processor{
 		logger:        logger,
 		workerPool:    pool,
 		productImport: productImport,
-		items:         items,
 		titles:        highlite.GetRequiredCSVTitles(),
+		csvParser:     csvParser,
 	}
 }
 
@@ -28,6 +37,7 @@ type Processor struct {
 	productImport IProductImport
 	items         io.Reader
 	titles        []string
+	csvParser     CSVParser
 }
 
 // SetTitles sets titles
@@ -37,13 +47,9 @@ func (p *Processor) SetTitles(titles []string) {
 
 // Update starts the update process.
 func (p *Processor) Update(ctx context.Context) {
-	p.logger.Debug("Starting update")
+	p.logger.Debug("starting update")
 
-	csvParser := csv.NewReader(p.items)
-	csvParser.Separator = ';'
-	csvParser.FieldsFixed = false
-	csvParser.OneRowRecord = true
-	csvMapper := csv.NewTitleMap(csvParser.GetNext())
+	csvMapper := csv.NewTitleMap(p.csvParser.GetNext())
 
 	if err := csvMapper.CheckTitles(p.titles); err != nil {
 		p.logger.Error(err.Error())
@@ -54,24 +60,22 @@ func (p *Processor) Update(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			p.logger.Warn("Context timeout")
-
+			p.logger.Warn("context timeout")
 			return
 
 		default:
-			if !csvParser.Next() {
-				if csvParser.Err() != nil {
-					p.logger.Errorf("Error processing csv with product updates: %s", csvParser.Err().Error())
+			if !p.csvParser.Next() {
+				if p.csvParser.Err() != nil {
+					p.logger.Errorf("error processing csv with product updates: %s", p.csvParser.Err())
 				}
-
 				return
 			}
 
-			product := highlite.GetProductFromCSVImport(csvMapper, csvParser.Values())
-			if err := csvMapper.CheckValues(csvParser.Values()); err != nil {
+			product := highlite.GetProductFromCSVImport(csvMapper, p.csvParser.Values())
+			if err := csvMapper.CheckValues(p.csvParser.Values()); err != nil {
 				p.logger.Errorf(
-					"Error processing csv with product updates: check values error on line %d: %s",
-					csvParser.CurrentRowIndex(),
+					"error processing csv with product updates: check values error on line %d: %s",
+					p.csvParser.CurrentRowIndex(),
 					err.Error(),
 				)
 				p.logger.Warn(product.String())
@@ -82,7 +86,7 @@ func (p *Processor) Update(ctx context.Context) {
 
 		i++
 		if i%50 == 0 {
-			p.logger.Infof("Processed %d products", i)
+			p.logger.Infof("processed %d products", i)
 		}
 	}
 }
@@ -92,9 +96,8 @@ func (p *Processor) getImportJob(ctx context.Context, high highlite.Product) que
 	return queue.NewCallbackJob(func() error {
 		err := p.productImport.Import(ctx, high)
 		if err != nil {
-			p.logger.Errorf("Product %s processing error: %s", high.No, err.Error())
+			p.logger.Errorf("product %s processing error: %s", high.No, err.Error())
 		}
-
 		return err
 	})
 }
