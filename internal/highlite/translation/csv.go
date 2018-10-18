@@ -2,7 +2,6 @@ package translation
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"highlite2-import/internal/csv"
@@ -56,17 +55,7 @@ func (t *ProductCSV) GetShortDescription() string {
 }
 
 // FillMemoryDictionaryFromCSV fills an exact MemoryDictionary with translations from a csv file.
-func FillMemoryDictionaryFromCSV(dic *MemoryDictionary, lang string, path string, titles map[int]string) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
-	csvParser := csv.NewReader(file)
-	csvParser.Separator = ';'
-	csvParser.QuotedQuotes = true
+func FillMemoryDictionaryFromCSV(csvParser *csv.Reader, dic *MemoryDictionary, lang string, titles map[int]string) error {
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
 	if _, ok := dic.languages[lang]; !ok {

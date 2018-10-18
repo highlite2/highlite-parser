@@ -11,6 +11,10 @@ func GetConfigFromEnv() Config {
 	var cfg = Config{}
 
 	cfg.TranslationsFilePath = os.Getenv("TRANSLATIONS_FILE_PATH")
+	separator := []rune(os.Getenv("TRANSLATIONS_FILE_SEPARATOR"))
+	if len(separator) > 0 {
+		cfg.TranslationsFileSeparator = separator[0]
+	}
 
 	if timeout, err := strconv.Atoi(os.Getenv("IMPORT_TIMEOUT")); err == nil {
 		cfg.ImportTimeout = time.Duration(timeout) * time.Second
@@ -34,7 +38,8 @@ func GetConfigFromEnv() Config {
 
 // Config is an application global config.
 type Config struct {
-	TranslationsFilePath string
+	TranslationsFilePath      string
+	TranslationsFileSeparator rune
 
 	ImportTimeout time.Duration
 

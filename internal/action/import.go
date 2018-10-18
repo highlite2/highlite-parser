@@ -2,10 +2,13 @@ package action
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"time"
 
 	"highlite2-import/internal"
 	"highlite2-import/internal/cache"
+	"highlite2-import/internal/csv"
 	"highlite2-import/internal/highlite"
 	"highlite2-import/internal/highlite/image"
 	"highlite2-import/internal/highlite/translation"
@@ -39,8 +42,19 @@ func Import(ctx context.Context, config internal.Config, logger log.ILogger) {
 	})
 
 	dictionary := translation.NewMemoryDictionary()
-	if err := translation.FillMemoryDictionaryFromCSV(dictionary, transfer.LocaleRu,
-		config.TranslationsFilePath, translation.GetRussianTranslationsCSVTitles()); err != nil {
+
+	file, err := os.Open(config.TranslationsFilePath)
+	if err != nil {
+		fmt.Printf("Can't open translations file: %s", err)
+	}
+	defer file.Close()
+
+	csvParser := csv.NewReader(file)
+	csvParser.QuotedQuotes = true
+	csvParser.Separator = config.TranslationsFileSeparator
+
+	if err := translation.FillMemoryDictionaryFromCSV(csvParser, dictionary,
+		transfer.LocaleRu, translation.GetRussianTranslationsCSVTitles()); err != nil {
 		logger.Errorf("Can't fill dictionary: %s", err.Error())
 
 		return

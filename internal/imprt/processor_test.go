@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+var titles = []string{`Product No.`, `Product Name`, `Country of Origin`, `Unit Price`, `Category`}
+
 func TestProcessor_Update(t *testing.T) {
 	// arrange
 	pool := queue.NewPool(10)
@@ -38,6 +40,7 @@ func TestProcessor_Update(t *testing.T) {
 
 	// act
 	processor := NewProcessor(logger, pool, pimp, processorTestDataGetReader())
+	processor.SetTitles(titles)
 	processor.Update(context.Background())
 	<-pool.Stop()
 
@@ -57,8 +60,6 @@ var processorTestData = map[string][]string{
 }
 
 func processorTestDataGetReader() io.Reader {
-	titles := []string{`"Product No."`, `'Product Name'`, `Country of Origin`, `"Unit Price"`, `Category`}
-
 	writer := bytes.Buffer{}
 	writer.WriteString(strings.Join(titles, ";"))
 	writer.WriteByte('\n')

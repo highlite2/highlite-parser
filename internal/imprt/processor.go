@@ -17,6 +17,7 @@ func NewProcessor(logger log.ILogger, pool queue.IPool, productImport IProductIm
 		workerPool:    pool,
 		productImport: productImport,
 		items:         items,
+		titles:        highlite.GetRequiredCSVTitles(),
 	}
 }
 
@@ -26,6 +27,12 @@ type Processor struct {
 	workerPool    queue.IPool
 	productImport IProductImport
 	items         io.Reader
+	titles        []string
+}
+
+// SetTitles sets titles
+func (p *Processor) SetTitles(titles []string) {
+	p.titles = titles
 }
 
 // Update starts the update process.
@@ -38,7 +45,7 @@ func (p *Processor) Update(ctx context.Context) {
 	csvParser.OneRowRecord = true
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
 
-	if err := csvMapper.CheckTitles(highlite.GetRequiredCSVTitles()); err != nil {
+	if err := csvMapper.CheckTitles(p.titles); err != nil {
 		p.logger.Error(err.Error())
 		return
 	}

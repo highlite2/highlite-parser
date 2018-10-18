@@ -8,6 +8,7 @@ import (
 	"highlite2-import/internal/csv"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var csvTestDataFilePath = "./csv_test_data.csv"
@@ -39,9 +40,16 @@ func TestFillMemoryDictionaryFromCSV(t *testing.T) {
 	dic := NewMemoryDictionary()
 	loc := "ru_RU"
 	items, itemsErr := readCSVTestDataFile()
+	file, err := os.Open(csvTestDataFilePath)
+	if err != nil {
+		require.NoError(t, err)
+	}
+	defer file.Close()
+	csvParser := csv.NewReader(file)
+	csvParser.QuotedQuotes = true
 
 	// act
-	FillMemoryDictionaryFromCSV(dic, loc, csvTestDataFilePath, GetRussianTranslationsCSVTitles())
+	FillMemoryDictionaryFromCSV(csvParser, dic, loc, GetRussianTranslationsCSVTitles())
 
 	// assert
 	assert.Nil(t, itemsErr)

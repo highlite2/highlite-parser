@@ -30,6 +30,14 @@ var testCases = []struct {
 		Output: [][]string{{"", ""}, {""}},
 	},
 	{
+		Input:  ",\n\r\n",
+		Output: [][]string{{"", ""}, {""}},
+	},
+	{
+		Input:  ",\r\r",
+		Output: [][]string{{"", ""}, {""}},
+	},
+	{
 		Input:  "\n\n\n",
 		Output: [][]string{{""}, {""}, {""}},
 	},
@@ -48,7 +56,7 @@ field 3";field4`,
 }
 
 func TestParser(t *testing.T) {
-	for _, tc := range testCases {
+	for i, tc := range testCases {
 		// arrange
 		parser := NewReader(strings.NewReader(tc.Input))
 		parser.QuotedQuotes = tc.QuotedQuotes
@@ -62,7 +70,7 @@ func TestParser(t *testing.T) {
 
 		// assert
 		assert.Nil(t, err)
-		assert.Equal(t, tc.Output, actual)
+		assert.Equal(t, tc.Output, actual, "index %d", i+1)
 	}
 }
 
