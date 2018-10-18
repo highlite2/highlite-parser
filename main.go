@@ -19,11 +19,9 @@ func main() {
 	switch *act {
 	case "import":
 		action.Import(ctx, config, logger)
-	default:
-		logger.Info("checking translations...")
-		action.TranslationCheck(ctx, config, logger)
 
-		logger.Info("checking product updates...")
-		action.UpdatesCheck(ctx, config, logger)
+	default:
+		logger.Info("checking import...")
+		action.ImportCheck(ctx, config, logger)
 	}
 }
