@@ -9,6 +9,7 @@ type IDictionary interface {
 type IProduct interface {
 	GetDescription() string
 	GetShortDescription() string
+	Empty() bool
 }
 
 // NewMemoryDictionary creates a new instance of a MemoryDictionary.

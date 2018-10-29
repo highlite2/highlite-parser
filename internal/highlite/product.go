@@ -99,22 +99,27 @@ type Product struct {
 	Images []string
 }
 
-// ProductDescription combines description and specs and removes html entities.
-func (p Product) ProductDescription() string {
+// GetDescription combines description and specs and removes html entities.
+func (p Product) GetDescription() string {
 	description := replaceHTMLEntities(p.Description)
 	description += "\n\n"
 	description += replaceHTMLEntities(p.Specs)
 
-	return description
+	return cutExtraSpaces(description)
+}
+
+// GetShortDescription takes product sub heading and removes extra spaces and lines
+func (p Product) GetShortDescription() string {
+	return cutExtraSpaces(p.SubHeading)
 }
 
 // ProductName combines name from brand and name fields.
 func (p Product) ProductName() string {
 	if p.Brand == "" {
-		return p.Name
+		return cutExtraSpaces(p.Name)
 	}
 
-	return p.Brand + " " + p.Name
+	return cutExtraSpaces(p.Brand + " " + p.Name)
 }
 
 // GetProductFromCSVImport creates product object from csv import data.
@@ -172,6 +177,10 @@ func (p Product) String() string {
 	info += fmt.Sprintf("Category3: %s", p.Category3.Name)
 
 	return info
+}
+
+func cutExtraSpaces(str string) string {
+	return strings.Trim(str, "\n ")
 }
 
 // Converts string containing product images to a slice of strings.

@@ -135,10 +135,10 @@ func (i *ProductImport) getVariantFromHighlite(high highlite.Product) transfer.V
 // Creates sylius Product structure from higlite product structure.
 func (i *ProductImport) getProductFromHighlite(high highlite.Product) transfer.Product {
 	tr := transfer.Translation{
-		Name:             strings.Trim(high.ProductName(), "\n "),
+		Name:             high.ProductName(),
 		Slug:             high.URL,
-		Description:      strings.Trim(high.ProductDescription(), "\n "),
-		ShortDescription: strings.Trim(high.SubHeading, "\n "),
+		Description:      high.GetDescription(),
+		ShortDescription: high.GetShortDescription(),
 	}
 
 	product := transfer.Product{
@@ -163,9 +163,9 @@ func (i *ProductImport) getProductFromHighlite(high highlite.Product) transfer.P
 		Channels: []string{i.channelName},
 	}
 
-	if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok {
-		tr.Description = strings.Trim(item.GetDescription(), "\n ")
-		tr.ShortDescription = strings.Trim(item.GetShortDescription(), "\n ")
+	if item, ok := i.dictionary.Get(transfer.LocaleRu, high.No); ok && !item.Empty() {
+		tr.Description = item.GetDescription()
+		tr.ShortDescription = item.GetShortDescription()
 		product.Translations[transfer.LocaleRu] = tr
 	} else {
 		i.logger.Warnf("Can't find translations for product No %s", product.Code)

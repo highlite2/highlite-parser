@@ -47,7 +47,7 @@ func ImportCheck(ctx context.Context, config internal.Config, logger log.ILogger
 		return
 	}
 
-	var productCounter, translationsMissing int
+	var productCounter, translationsMissing, everythingMissing int
 
 	for csvParser.Next() {
 		productCounter++
@@ -57,9 +57,15 @@ func ImportCheck(ctx context.Context, config internal.Config, logger log.ILogger
 			logger.Warn(product.String())
 		}
 
-		if _, ok := dictionary.Get(transfer.LocaleRu, product.No); !ok {
+		if translation, ok := dictionary.Get(transfer.LocaleRu, product.No); !ok || translation.Empty() {
 			translationsMissing++
 			logger.Warnf("missing translations for %s product", product.No)
+			desc := product.GetDescription()
+			short := product.GetShortDescription()
+			if desc == "" && short == "" {
+				everythingMissing++
+				logger.Warnf("missing english version for http://highlite-spb.ru/products/%s", product.URL)
+			}
 		}
 	}
 
@@ -70,8 +76,9 @@ func ImportCheck(ctx context.Context, config internal.Config, logger log.ILogger
 	logger.Infof("processed %d products", productCounter)
 	if translationsMissing > 0 {
 		logger.Warnf("missing translations for %d products", translationsMissing)
-	} else {
-		logger.Infof("no missing translations")
+	}
+	if everythingMissing > 0 {
+		logger.Warnf("missing english version for %d products", everythingMissing)
 	}
 
 }

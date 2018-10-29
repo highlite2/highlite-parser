@@ -54,6 +54,11 @@ func (t *ProductCSV) GetShortDescription() string {
 	return strings.Trim(t.SubHeading, "\n")
 }
 
+// Empty returns true if all translations are empty strings
+func (t *ProductCSV) Empty() bool {
+	return t.GetDescription() == "" && t.GetShortDescription() == ""
+}
+
 // FillMemoryDictionaryFromCSV fills an exact MemoryDictionary with translations from a csv file.
 func FillMemoryDictionaryFromCSV(csvParser *csv.Reader, dic *MemoryDictionary, lang string, titles map[int]string) error {
 	csvMapper := csv.NewTitleMap(csvParser.GetNext())
